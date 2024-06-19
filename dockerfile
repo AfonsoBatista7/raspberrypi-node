@@ -25,7 +25,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS builderDotNet
 WORKDIR /ProjectDotNet
 
 COPY ./chat .
-COPY --from=builderGo /ProjectGo/libgo.so ./
+COPY --from=builderGo /ProjectGo/go-code/libgo.so ./
 
 RUN dotnet restore && \
     dotnet add package System.Device.Gpio --version 2.2.0-* && \
