@@ -74,7 +74,7 @@ func readData(rw *bufio.ReadWriter) {
 		str, _ := rw.ReadString('\n')
 
 		id := strings.Split(str, ":")[0]
-		state, err := strconv.Atoi(strings.Split(str, ":")[1])
+		state, err := strconv.Atoi(strings.TrimSpace(strings.Split(str, ":")[1]))
 
 		if err != nil {
 			logCallback(fmt.Sprintf("State not an integer: %s\n", err))
