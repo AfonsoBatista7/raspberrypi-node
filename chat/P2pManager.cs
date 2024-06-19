@@ -16,11 +16,7 @@ namespace P2P {
         readonly string[] _bootstrapAddrs;
         readonly bool _isDebugMode;
 
-        #if LINUX
-            private const string LIBNAME = "libgo.so";
-        #else
-            private const string LIBNAME = "libgo.dll";
-        #endif
+        private const string LIBNAME = "libgo.so";
 
         #region External Methods
             [DllImport(LIBNAME, EntryPoint = "StartP2P", CallingConvention = CallingConvention.Cdecl)]
