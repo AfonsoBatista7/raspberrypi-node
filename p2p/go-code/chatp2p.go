@@ -76,11 +76,12 @@ func readData(rw *bufio.ReadWriter) {
 		id := strings.Split(str, ":")[0]
 		state, err := strconv.Atoi(strings.Split(str, ":")[1])
 
-		if err == nil {
+		if err != nil {
+			logCallback(fmt.Sprintf("State not an integer: %s\n", err))
+		} else {
 			virtualStateChangeCallback(id, state)
 		}
 
-		logCallback(fmt.Sprintf("State not an integer: %s\n", strings.Split(str, ":")[1]))
 	}
 }
 
@@ -123,9 +124,9 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debu
 
 	if(debug) {
 		bootstrapPeers = make([]peer.AddrInfo, len(dht.DefaultBootstrapPeers))
-                for i, addr := range dht.DefaultBootstrapPeers {
-                        peerinfo, _ := peer.AddrInfoFromP2pAddr(addr)
-                        bootstrapPeers[i] = *peerinfo
+		for i, addr := range dht.DefaultBootstrapPeers {
+			peerinfo, _ := peer.AddrInfoFromP2pAddr(addr)
+			bootstrapPeers[i] = *peerinfo
 		}
 	} else {
 		bootstrapPeers = make([]peer.AddrInfo, len(cBootstrapPeers))
@@ -150,7 +151,7 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debu
 	time.Sleep(5 * time.Second)
 
 	discovery = routing.NewRoutingDiscovery(kademliaDht)
-	util.Advertise(ctx, discovery, playerId/*h.ID().String()*/)
+	util.Advertise(ctx, discovery, playerId)
 
 	// Wait until the peer is terminated
 	<-p.done
@@ -178,9 +179,7 @@ func makeHost(randomness io.Reader) (host.Host, error) {
 
 		// Attempt to open ports using uPNP for NATed hosts.
 		libp2p.NATPortMap(),
-
 		libp2p.EnableHolePunching(),
-		//libp2p.EnableAutoRelayWithPeerSource(dht.DefaultBootstrapPeers),
 	)
 }
 
@@ -200,12 +199,6 @@ func connectToPeer(peerID string) {
 		logCallback(fmt.Sprintf("%s\n", err))
 		return
 	}
-
-	/*peerIdObj, err := peer.Decode(peerID)
-	if err != nil {
-		logCallback(fmt.Sprintf("Failed to decode peer ID: %s\n", err))
-		return
-	}*/
 
 	rw, err := connectToPeerAction(peerIdObj)
 	if err != nil {
