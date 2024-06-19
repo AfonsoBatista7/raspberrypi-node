@@ -40,7 +40,6 @@ public class MainClass {
 
         Console.WriteLine("Waiting for connection...");
 
-        Console.WriteLine("Press ENTER to Toggle the Light");
 
         string? end = "";
         while (!end.Equals("exit")) {
@@ -48,7 +47,7 @@ public class MainClass {
             if(P2pManager.isConnected) {
                 Console.ReadLine();
 
-                gpioManager.ToggleLight();
+                gpioManager.PhysicalStateChangeEvent(new PinValueChangedEventArgs(PinEventTypes.Falling ,17));
             }
         }
 

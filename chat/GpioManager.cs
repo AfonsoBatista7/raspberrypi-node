@@ -53,7 +53,7 @@ namespace IoT {
         }
 
         public void HandleVirtualStateChange(P2PEventArgs args) {
-            
+            ToggleLight();
         }
 
         public void PhysicalStateChangeEvent(PinValueChangedEventArgs args) {

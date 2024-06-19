@@ -20,8 +20,8 @@ namespace P2P {
 
         #region External Methods
             [DllImport(LIBNAME, EntryPoint = "StartP2P", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void StartP2P(string[] bootstrapAddrs, int bootstrapCount, CallbackDelegate receiveMessageCallback,
-             CallbackDelegate logCallback, ConnectNotify connectNotify, CallbackVirtualStateChange virtualState, bool debug, string playerId);
+            public static extern void StartP2P(string[] bootstrapAddrs, int bootstrapCount, CallbackDelegate logCallback,
+                ConnectNotify connectNotify, CallbackVirtualStateChange virtualState, bool debug, string playerId);
 
             [DllImport(LIBNAME, EntryPoint = "WriteData", CallingConvention = CallingConvention.Cdecl)]
             public static extern void WriteData(string sendData); 
@@ -34,10 +34,6 @@ namespace P2P {
         #endregion
 
         #region Callback Methods
-            public static void OnGetMessage(string message) {
-                Console.WriteLine($"From another player: {message.TrimEnd('\n')}");
-            }
-
             public static void OnDebugLog(string log) {
                 Console.WriteLine(log);
             }
@@ -59,7 +55,7 @@ namespace P2P {
 
         // STARTING PEER
         public void StartPeer() {
-            StartP2P(_bootstrapAddrs, _bootstrapAddrs.Length, OnGetMessage, OnDebugLog, PeerConnected, VirtualStateChange, _isDebugMode, _objectId);
+            StartP2P(_bootstrapAddrs, _bootstrapAddrs.Length, OnDebugLog, PeerConnected, VirtualStateChange, _isDebugMode, _objectId);
         }
 
         // Closing PEER
