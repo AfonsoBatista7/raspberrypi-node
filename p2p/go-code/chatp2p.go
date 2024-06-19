@@ -79,6 +79,7 @@ func readData(rw *bufio.ReadWriter) {
 		if err != nil {
 			logCallback(fmt.Sprintf("State not an integer: %s\n", err))
 		} else {
+			logCallback(fmt.Sprintf("ID:%s STATE:%d\n", id, state))
 			virtualStateChangeCallback(id, state)
 		}
 

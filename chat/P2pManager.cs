@@ -43,6 +43,7 @@ namespace P2P {
             }
 
             public static void VirtualStateChange(int id, int state) {
+                Console.WriteLine($"ID -> {id} and STATE -> {state}");
                 OnVirtualStateChange?.Invoke(null, new P2PEventArgs(id, state));
             }
         #endregion
