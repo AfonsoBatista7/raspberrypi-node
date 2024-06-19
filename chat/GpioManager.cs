@@ -60,7 +60,7 @@ namespace IoT {
 
         public void PhysicalStateChangeEvent(PinValueChangedEventArgs args) {
             //TODO - Better handling of the IoT ids
-            int id = args.PinNumber;
+            string id = args.PinNumber.ToString();
             _isLedOn = !_isLedOn;
 
             OnPhysicalStateChange?.Invoke(this, new GpioEventArgs(id, _isLedOn ? 1 : 0));
@@ -70,9 +70,9 @@ namespace IoT {
 
 public class GpioEventArgs : EventArgs {
     public int State { get; }
-    public int Id { get; }
+    public string Id { get; }
 
-    public GpioEventArgs(int id, int state) {
+    public GpioEventArgs(string id, int state) {
         State = state;
         Id = id;
     }

@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace P2P {
 
-    public delegate void CallbackVirtualStateChange(int id, int state);
+    public delegate void CallbackVirtualStateChange(string id, int state);
     public delegate void CallbackDelegate(string message);
     public delegate void ConnectNotify();
 
@@ -42,7 +42,7 @@ namespace P2P {
                 isConnected = true; 
             }
 
-            public static void VirtualStateChange(int id, int state) {
+            public static void VirtualStateChange(string id, int state) {
                 Console.WriteLine($"ID -> {id} and STATE -> {state}");
                 OnVirtualStateChange?.Invoke(null, new P2PEventArgs(id, state));
             }
@@ -75,9 +75,9 @@ namespace P2P {
 
 public class P2PEventArgs : EventArgs {
     public int State { get; }
-    public int Id { get; }
+    public string Id { get; }
 
-    public P2PEventArgs(int id, int state) {
+    public P2PEventArgs(string id, int state) {
         State = state;
         Id = id;
     }
