@@ -40,7 +40,7 @@ func StartP2P(bootstrapPeers **C.char, bootstrapCount int, transfer C.transfer_d
 	}
 
 	goVirtualStateChange := func(id int, state int) {
-		C.virtualStateChangeMakeCallback(id, state, connectNotify)
+		C.virtualStateChangeMakeCallback(C.int(id), C.int(state), connectNotify)
 	}
 
 	goBootstrapPeers := make([]string, bootstrapCount)
@@ -50,7 +50,7 @@ func StartP2P(bootstrapPeers **C.char, bootstrapCount int, transfer C.transfer_d
 		goBootstrapPeers[i] = C.GoString(cBootstrapPointer)
 	}
 
-	go pm.startProtocolP2P(goBootstrapPeers, goTransfer, goDebugLog, goConnectNotify, debug, C.GoString(playerId))
+	go pm.startProtocolP2P(goBootstrapPeers, goTransfer, goDebugLog, goConnectNotify, goVirtualStateChange, debug, C.GoString(playerId))
 }
 
 //export WriteData
