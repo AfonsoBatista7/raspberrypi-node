@@ -1,9 +1,6 @@
 package main
 
 // typedef void (*transfer_data)(const char*);
-// extern void getMessageMakeCallback(const char* message, transfer_data transfer) {
-//     transfer(message);
-// }
 // extern void debugLogMakeCallback(const char* log, transfer_data logFunc) {
 //     logFunc(log);
 // }
@@ -11,8 +8,8 @@ package main
 // extern void connectNotifyMakeCallback(notify notifyFunc) {
 //     notifyFunc();
 // }
-// typedef void (*virtual_state)(int id, int state);
-// extern void virtualStateChangeMakeCallback(int id, int state, virtual_state virtualStateChangeFunc) {
+// typedef void (*virtual_state)(const char* id, int state);
+// extern void virtualStateChangeMakeCallback(const char* id, int state, virtual_state virtualStateChangeFunc) {
 //     virtualStateChangeFunc(id, state);
 // }
 import "C"
@@ -23,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 	"time"
 
@@ -39,12 +37,10 @@ import (
 	"github.com/multiformats/go-multiaddr"
 )
 
-type transferData func(message string)
 type debugLog func(log string)
 type connectNotify func()
-type virtualStateChange func(id int, state int)
+type virtualStateChange func(id string, state int)
 
-var transferCallback transferData 
 var logCallback debugLog 
 var connectNotifyCallback connectNotify
 var virtualStateChangeCallback virtualStateChange 
@@ -77,13 +73,15 @@ func readData(rw *bufio.ReadWriter) {
 	for {
 		str, _ := rw.ReadString('\n')
 
-		if str == "" {
+		id := strings.Split(str, ":")[0]
+		state, err := strconv.Atoi(strings.Split(str, ":")[1])
+
+		if err != nil {
+			logCallback("State not an integer")
 			return
 		}
 
-		if str != "\n" {
-			transferCallback(str)
-		}
+		virtualStateChangeCallback(id, state)
 	}
 }
 
@@ -96,7 +94,7 @@ func writeData(sendData string) {
   }
 }
 
-func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goTransfer transferData, goDebugLog debugLog, goConnectNotify connectNotify, goVirtualStateChange virtualStateChange, debug bool, playerId string) {
+func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debugLog, goConnectNotify connectNotify, goVirtualStateChange virtualStateChange, debug bool, playerId string) {
 
 	readWriter = make([]*bufio.ReadWriter, 0, 5)
 
@@ -104,7 +102,6 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goTransfer tran
 	defer cancel()
 
 	contextVar = ctx
-	transferCallback = goTransfer
 	logCallback = goDebugLog
 	connectNotifyCallback = goConnectNotify
 	virtualStateChangeCallback = goVirtualStateChange
