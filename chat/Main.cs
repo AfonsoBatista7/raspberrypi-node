@@ -40,7 +40,7 @@ public class MainClass {
 
         Console.WriteLine("Waiting for connection...");
 
-        Console.Write("Press ENTER to Toggle the Light");
+        Console.WriteLine("Press ENTER to Toggle the Light");
 
         string? end = "";
         while (!end.Equals("exit")) {
