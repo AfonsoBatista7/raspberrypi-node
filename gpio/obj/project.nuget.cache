@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "YxOxTghiV/ecWMOy1FrBy9KlXCqmIUL1oVbhJsEt2GZfGjIEAaUNyWZTcG4ngP4cQL5eV+cf3d+e6F6gOEqp+A==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Afonso Batista\\Documents\\NOS\\nosi-fusion-paradigma-metaverso-unity\\raspberry-node-image\\gpio\\LightSwitch.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Afonso Batista\\.nuget\\packages\\system.device.gpio\\2.2.0\\system.device.gpio.2.2.0.nupkg.sha512"
+  ],
+  "logs": []
+}
