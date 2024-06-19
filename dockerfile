@@ -6,15 +6,16 @@ WORKDIR /ProjectGo
 
 COPY ./p2p .
 
-ENV CGO_ENABLED=1 && \
-    GOOS=linux && \
-    GOARCH=arm64 && \
-    CC=aarch64-linux-gnu-gcc && \
-    CXX=aarch64-linux-gnu-g++ 
+ENV CGO_ENABLED=1
+ENV GOOS=linux
+ENV GOARCH=arm64
+ENV CC=aarch64-linux-gnu-gcc 
+ENV CXX=aarch64-linux-gnu-g++ 
 
 # Clean Go build cache
 # Compile Go code to generate a shared library (.so) file
-RUN go clean -cache -modcache -i -r && \
+RUN cd go-code && \
+    go clean -cache -modcache -i -r && \
     go build -ldflags="-s -w" -buildmode=c-shared -o libgo.so chatp2p.go chatp2p_api.go
 
 #BUILD DotNet
