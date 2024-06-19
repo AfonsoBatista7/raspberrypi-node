@@ -8,7 +8,7 @@ package main
 // extern void connectNotifyMakeCallback(notify notifyFunc) {
 //     notifyFunc();
 // }
-// typedef void (*virtual_state)(const char* id, int state);
+// typedef void (*virtual_state)(const char*, int);
 // extern void virtualStateChangeMakeCallback(const char* id, int state, virtual_state virtualStateChangeFunc) {
 //     virtualStateChangeFunc(id, state);
 // }
