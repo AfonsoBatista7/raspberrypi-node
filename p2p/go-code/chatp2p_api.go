@@ -4,7 +4,7 @@ package main
 // void debugLogMakeCallback(const char* log, transfer_data logFunc);
 // typedef void (*notify)();
 // void connectNotifyMakeCallback(notify connectNotify);
-// typedef void (*virtual_state)(const char* id, int state);
+// typedef void (*virtual_state)(const char*, int);
 // void virtualStateChangeMakeCallback(const char* id, int state, virtual_state virtualStateChangeFunc);
 import "C"
 import (
