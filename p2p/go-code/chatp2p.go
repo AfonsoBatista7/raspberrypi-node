@@ -76,12 +76,11 @@ func readData(rw *bufio.ReadWriter) {
 		id := strings.Split(str, ":")[0]
 		state, err := strconv.Atoi(strings.Split(str, ":")[1])
 
-		if err != nil {
-			logCallback("State not an integer")
-			return
+		if err == nil {
+			virtualStateChangeCallback(id, state)
 		}
 
-		virtualStateChangeCallback(id, state)
+		logCallback(fmt.Sprintf("State not an integer: %s\n", strings.Split(str, ":")[1]))
 	}
 }
 
