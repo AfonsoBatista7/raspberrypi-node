@@ -53,17 +53,20 @@ namespace IoT {
         }
 
         public void HandleVirtualStateChange(P2PEventArgs args) {
-            bool newState = ToggleLight();
-            
-            OnPhysicalStateChange?.Invoke(this, new GpioEventArgs(args.Id, newState ? 1 : 0));
+            try {
+                int id = int.Parse(args.Id);
+                PhysicalStateChangeEvent(new PinValueChangedEventArgs(PinEventTypes.Falling , id));
+            } catch (FormatException) {
+                Console.WriteLine($"Unable to parse '{args.Id}'");
+            }
         }
 
         public void PhysicalStateChangeEvent(PinValueChangedEventArgs args) {
             //TODO - Better handling of the IoT ids
             string id = args.PinNumber.ToString();
-            _isLedOn = !_isLedOn;
+            bool newState = ToggleLight();
 
-            OnPhysicalStateChange?.Invoke(this, new GpioEventArgs(id, _isLedOn ? 1 : 0));
+            OnPhysicalStateChange?.Invoke(this, new GpioEventArgs(id, newState ? 1 : 0));
         }
     }
 }
