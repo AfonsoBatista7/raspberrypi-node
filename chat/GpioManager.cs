@@ -20,7 +20,7 @@ namespace IoT {
             _controller.OpenPin(_pinOutput, PinMode.Output);
             _controller.OpenPin(_pinInput, PinMode.Input);
 
-            _controller.RegisterCallbackForPinValueChangedEvent(_pinInput, PinEventTypes.Falling,  (sender, args) => PhysicalStateChangeEvent(args));
+            _controller.RegisterCallbackForPinValueChangedEvent(_pinInput, PinEventTypes.None,  (sender, args) => PhysicalStateChangeEvent(args));
 
         }
 
@@ -45,6 +45,17 @@ namespace IoT {
             return _isLedOn;
         }
 
+        public bool SetState(int state) {
+            bool boolState = StateToBool(state);
+
+            if(boolState!=_isLedOn) {
+                if(boolState) TurnOnLight();
+                else TurnOffLight();
+            }
+
+            return _isLedOn;
+        }
+
         public void Dispose() {
 
             TurnOffLight();
@@ -61,15 +72,22 @@ namespace IoT {
             //TODO - handle objectId
             string objectId = args.Id;
 
-            PhysicalStateChangeEvent(new PinValueChangedEventArgs(PinEventTypes.Falling , _pinOutput));
+            PhysicalStateChangeEvent(new PinValueChangedEventArgs(PinEventTypes.None , _pinOutput), args.State);
         }
 
-        public void PhysicalStateChangeEvent(PinValueChangedEventArgs args) {
+        public void PhysicalStateChangeEvent(PinValueChangedEventArgs args, int state = -1) {
             //TODO - Better handling of the IoT ids
             string id = args.PinNumber.ToString();
-            bool newState = ToggleLight();
 
-            OnPhysicalStateChange?.Invoke(this, new GpioEventArgs(id, newState ? 1 : 0));
+            //changing or setting the state
+            bool newState = state<0 ? ToggleLight() : SetState(state);
+
+            if(newState!=_isLedOn)
+                OnPhysicalStateChange?.Invoke(this, new GpioEventArgs(id, newState ? 1 : 0));
+        }
+
+        private bool StateToBool(int state) {
+            return state == 1;
         }
     }
 }
