@@ -35,7 +35,7 @@ func StartP2P(bootstrapPeers **C.char, bootstrapCount int, debugLog C.transfer_d
 	}
 
 	goVirtualStateChange := func(id string, state int) {
-		C.virtualStateChangeMakeCallback(C.CString(id), C.int(state), connectNotify)
+		C.virtualStateChangeMakeCallback(C.CString(id), C.int(state), virtualStateChange)
 	}
 
 	goBootstrapPeers := make([]string, bootstrapCount)
