@@ -82,7 +82,7 @@ namespace IoT {
             //changing or setting the state
             bool newState = state<0 ? ToggleLight() : SetState(state);
 
-            if(newState!=_isLedOn)
+            if(newState!=_isLedOn || state <0)
                 OnPhysicalStateChange?.Invoke(this, new GpioEventArgs(id, newState ? 1 : 0));
         }
 
