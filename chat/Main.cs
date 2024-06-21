@@ -43,14 +43,7 @@ public class MainClass {
 
 
         string? end = "";
-        while (!end.Equals("exit")) {
-
-            if(P2pManager.isConnected) {
-                Console.ReadLine();
-
-                gpioManager.PhysicalStateChangeEvent(new PinValueChangedEventArgs(PinEventTypes.Falling ,17));
-            }
-        }
+        while (!end.Equals("exit")) { }
 
         P2pManager.OnVirtualStateChange -= (sender, args) => gpioManager.HandleVirtualStateChange(args);
         gpioManager.OnPhysicalStateChange -= (sender, args) => p2pManager.HandlePhysicalStateChange(args);
