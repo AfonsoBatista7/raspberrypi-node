@@ -1,4 +1,5 @@
 using System.Device.Gpio;
+using System.Runtime.Serialization;
 
 namespace IoT {
 
@@ -53,12 +54,11 @@ namespace IoT {
         }
 
         public void HandleVirtualStateChange(P2PEventArgs args) {
-            try {
-                int id = int.Parse(args.Id);
-                PhysicalStateChangeEvent(new PinValueChangedEventArgs(PinEventTypes.Falling , id));
-            } catch (FormatException) {
-                Console.WriteLine($"Unable to parse '{args.Id}'");
-            }
+
+            //TODO - handle objectId
+            string objectId = args.Id;
+
+            PhysicalStateChangeEvent(new PinValueChangedEventArgs(PinEventTypes.Falling , _pinOutput));
         }
 
         public void PhysicalStateChangeEvent(PinValueChangedEventArgs args) {
