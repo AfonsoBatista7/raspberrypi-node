@@ -46,6 +46,9 @@ namespace IoT {
         }
 
         public void Dispose() {
+
+            TurnOffLight();
+
             if (_controller != null) {
                 _controller.ClosePin(_pinOutput);
                 _controller.ClosePin(_pinInput);
