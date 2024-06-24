@@ -20,7 +20,7 @@ namespace IoT {
             _controller.OpenPin(_pinOutput, PinMode.Output);
             _controller.OpenPin(_pinInput, PinMode.Input);
 
-            _controller.RegisterCallbackForPinValueChangedEvent(_pinInput, PinEventTypes.None,  (sender, args) => PhysicalStateChangeEvent(args));
+            _controller.RegisterCallbackForPinValueChangedEvent(_pinInput, PinEventTypes.Falling,  (sender, args) => PhysicalStateChangeEvent(args));
 
         }
 
