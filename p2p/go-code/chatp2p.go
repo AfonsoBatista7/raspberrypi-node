@@ -23,6 +23,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/libp2p/go-libp2p"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
@@ -50,6 +51,8 @@ var hostData host.Host
 var contextVar context.Context
 var kademliaDht *dht.IpfsDHT
 var discovery *routing.RoutingDiscovery
+
+var rendezvousString = "IOT"
 
 // Will only be run on the receiving side.
 func handleStream(s network.Stream) {
@@ -122,19 +125,19 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debu
 
 	var r io.Reader = rand.Reader
 
-	h, err := makeHost(r)
+	host, err := makeHost(r)
 	if err != nil {
 		logCallback(fmt.Sprintf("Failed to create host: %s\n", err))
 		return
 	}
 
-	hostData = h
+	hostData = host
 
 	startPeer(hostData, handleStream)
 
 	logCallback(fmt.Sprintf("Debug mode: %t\n", debug))
 
-	kademliaDht, err = dht.New(ctx, h)
+	kademliaDht, err = dht.New(ctx, host)
 	if err != nil {
 		logCallback(fmt.Sprintf("Failed to create DHT: %s\n", err))
 	}
@@ -162,13 +165,47 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debu
 	}
 	wg.Wait()
 
+	Discover(ctx, host, kademliaDht, playerId)
+
+	<- p.done
+	// Wait until the peer is terminated
+	logCallback("Closing peer...")
+}
+
+func Discover(ctx context.Context, host host.Host, dht *dht.IpfsDHT, playerId string) {
 	discovery = routing.NewRoutingDiscovery(kademliaDht)
 	util.Advertise(ctx, discovery, playerId)
-	util.Advertise(ctx, discovery, "IOT")
+	util.Advertise(ctx, discovery, rendezvousString)
 
-	// Wait until the peer is terminated
-	<-p.done
-	logCallback("Closing peer...")
+	ticker := time.NewTicker(time.Second * 1)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <- ctx.Done():
+			return
+		case <-ticker.C:
+
+			peers, err := util.FindPeers(ctx, discovery, rendezvousString)
+
+			if err != nil {
+				logCallback("x")
+			}
+
+			for _, peer := range peers {
+				if peer.ID == host.ID() {
+					continue
+				}
+				if host.Network().Connectedness(peer.ID) != network.Connected {
+					_, err = host.Network().DialPeer(ctx, peer.ID)
+					fmt.Printf("Connected to peer %s\n", peer.ID.String())
+					if err != nil {
+						continue
+					}
+				}
+			}
+		}
+	}
 }
 
 
