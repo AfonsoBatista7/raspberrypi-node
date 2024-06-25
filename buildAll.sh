@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm -d ./Build
+rm -d -r ./Build
 mkdir Build
 
 cd p2p || exit
