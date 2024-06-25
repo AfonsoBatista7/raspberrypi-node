@@ -101,9 +101,9 @@ func connectBootstrapPeer(ctx context.Context, host host.Host, peerinfo peer.Add
 		defer wg.Done()
 
 		if err := host.Connect(ctx, peerinfo); err != nil {
-			logCallback("x\n")
+			logCallback("x")
 		} else {
-			logCallback(".\n")
+			logCallback(".")
 		}
 	}()
 }

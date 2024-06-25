@@ -16,7 +16,7 @@ chmod +x buildDotNet.sh
 ./buildDotNet.sh
 
 cd ../ || exit
-cp ./chat/out/* ./build
+cp ./chat/out/* ./Build
 
 rm -r -d ./chat/out
 
