@@ -1,12 +1,11 @@
 package main
 
 // typedef void (*transfer_data)(const char*);
-// void getMessageMakeCallback(const char* message, transfer_data transfer);
 // void debugLogMakeCallback(const char* log, transfer_data logFunc);
 // typedef void (*notify)();
 // void connectNotifyMakeCallback(notify connectNotify);
-// typedef void (*virtual_state)(int id, int state);
-// void virtualStateChangeMakeCallback(int id, int state, virtual_state virtualStateChangeFunc);
+// typedef void (*virtual_state)(const char*, int);
+// void virtualStateChangeMakeCallback(const char* id, int state, virtual_state virtualStateChangeFunc);
 import "C"
 import (
 	"unsafe"
@@ -21,14 +20,10 @@ type PeerManager struct {
 var pm *PeerManager
 
 //export StartP2P
-func StartP2P(bootstrapPeers **C.char, bootstrapCount int, transfer C.transfer_data, debugLog C.transfer_data, connectNotify C.notify, virtualStateChange C.virtual_state, debug bool, playerId *C.char) {
+func StartP2P(bootstrapPeers **C.char, bootstrapCount int, debugLog C.transfer_data, connectNotify C.notify, virtualStateChange C.virtual_state, debug bool, playerId *C.char) {
 	pm = &PeerManager {
 		done: make(chan bool),
 		disconnect: make(chan bool),
-	}
-
-	goTransfer := func(message string) {
-		C.getMessageMakeCallback(C.CString(message), transfer)
 	}
 
 	goDebugLog := func(log string) {
@@ -39,8 +34,8 @@ func StartP2P(bootstrapPeers **C.char, bootstrapCount int, transfer C.transfer_d
 		C.connectNotifyMakeCallback(connectNotify)
 	}
 
-	goVirtualStateChange := func(id int, state int) {
-		C.virtualStateChangeMakeCallback(id, state, connectNotify)
+	goVirtualStateChange := func(id string, state int) {
+		C.virtualStateChangeMakeCallback(C.CString(id), C.int(state), virtualStateChange)
 	}
 
 	goBootstrapPeers := make([]string, bootstrapCount)
@@ -50,7 +45,7 @@ func StartP2P(bootstrapPeers **C.char, bootstrapCount int, transfer C.transfer_d
 		goBootstrapPeers[i] = C.GoString(cBootstrapPointer)
 	}
 
-	go pm.startProtocolP2P(goBootstrapPeers, goTransfer, goDebugLog, goConnectNotify, debug, C.GoString(playerId))
+	go pm.startProtocolP2P(goBootstrapPeers, goDebugLog, goConnectNotify, goVirtualStateChange, debug, C.GoString(playerId))
 }
 
 //export WriteData

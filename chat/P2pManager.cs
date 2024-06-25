@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 
 namespace P2P {
 
-    public delegate void CallbackVirtualStateChange(int id, int state);
+    public delegate void CallbackVirtualStateChange(string id, int state);
     public delegate void CallbackDelegate(string message);
     public delegate void ConnectNotify();
 
@@ -16,16 +16,12 @@ namespace P2P {
         readonly string[] _bootstrapAddrs;
         readonly bool _isDebugMode;
 
-        #if LINUX
-            private const string LIBNAME = "libgo.so";
-        #else
-            private const string LIBNAME = "libgo.dll";
-        #endif
+        private const string LIBNAME = "libgo.so";
 
         #region External Methods
             [DllImport(LIBNAME, EntryPoint = "StartP2P", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void StartP2P(string[] bootstrapAddrs, int bootstrapCount, CallbackDelegate receiveMessageCallback,
-             CallbackDelegate logCallback, ConnectNotify connectNotify, CallbackVirtualStateChange virtualState, bool debug, string playerId);
+            public static extern void StartP2P(string[] bootstrapAddrs, int bootstrapCount, CallbackDelegate logCallback,
+                ConnectNotify connectNotify, CallbackVirtualStateChange virtualState, bool debug, string playerId);
 
             [DllImport(LIBNAME, EntryPoint = "WriteData", CallingConvention = CallingConvention.Cdecl)]
             public static extern void WriteData(string sendData); 
@@ -38,10 +34,6 @@ namespace P2P {
         #endregion
 
         #region Callback Methods
-            public static void OnGetMessage(string message) {
-                Console.WriteLine($"From another player: {message.TrimEnd('\n')}");
-            }
-
             public static void OnDebugLog(string log) {
                 Console.WriteLine(log);
             }
@@ -50,7 +42,8 @@ namespace P2P {
                 isConnected = true; 
             }
 
-            public static void VirtualStateChange(int id, int state) {
+            public static void VirtualStateChange(string id, int state) {
+                Console.WriteLine($"ID -> {id} and STATE -> {state}");
                 OnVirtualStateChange?.Invoke(null, new P2PEventArgs(id, state));
             }
         #endregion
@@ -63,7 +56,7 @@ namespace P2P {
 
         // STARTING PEER
         public void StartPeer() {
-            StartP2P(_bootstrapAddrs, _bootstrapAddrs.Length, OnGetMessage, OnDebugLog, PeerConnected, VirtualStateChange, _isDebugMode, _objectId);
+            StartP2P(_bootstrapAddrs, _bootstrapAddrs.Length, OnDebugLog, PeerConnected, VirtualStateChange, _isDebugMode, _objectId);
         }
 
         // Closing PEER
@@ -82,9 +75,9 @@ namespace P2P {
 
 public class P2PEventArgs : EventArgs {
     public int State { get; }
-    public int Id { get; }
+    public string Id { get; }
 
-    public P2PEventArgs(int id, int state) {
+    public P2PEventArgs(string id, int state) {
         State = state;
         Id = id;
     }

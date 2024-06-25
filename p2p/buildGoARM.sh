@@ -11,10 +11,10 @@ export CC=aarch64-linux-gnu-gcc
 export CXX=aarch64-linux-gnu-g++
 
 # Clean Go build cache
-go clean -cache -modcache -i -r #> /dev/null 2>&1
+go clean -cache -modcache -i -r > /dev/null 2>&1
 
 # Compile Go code to generate a shared library (.so) file
-go build -ldflags="-s -w" -buildmode=c-shared -o libgo.so chatp2p.go chatp2p_api.go #> /dev/null 2>&1
+go build -ldflags="-s -w" -buildmode=c-shared -o libgo.so chatp2p.go chatp2p_api.go > /dev/null 2>&1
 
 # Check if compilation was successful
 if [ $? -eq 0 ]; then

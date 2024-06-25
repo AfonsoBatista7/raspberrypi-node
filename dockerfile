@@ -6,15 +6,16 @@ WORKDIR /ProjectGo
 
 COPY ./p2p .
 
-ENV CGO_ENABLED=1 && \
-    GOOS=linux && \
-    GOARCH=arm64 && \
-    CC=aarch64-linux-gnu-gcc && \
-    CXX=aarch64-linux-gnu-g++ 
+ENV CGO_ENABLED=1
+ENV GOOS=linux
+ENV GOARCH=arm64
+ENV CC=aarch64-linux-gnu-gcc 
+ENV CXX=aarch64-linux-gnu-g++ 
 
 # Clean Go build cache
 # Compile Go code to generate a shared library (.so) file
-RUN go clean -cache -modcache -i -r && \
+RUN cd go-code && \
+    go clean -cache -modcache -i -r && \
     go build -ldflags="-s -w" -buildmode=c-shared -o libgo.so chatp2p.go chatp2p_api.go
 
 #BUILD DotNet
@@ -24,14 +25,13 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS builderDotNet
 WORKDIR /ProjectDotNet
 
 COPY ./chat .
-COPY --from=builderGo /ProjectGo/libgo.so ./
+COPY --from=builderGo /ProjectGo/go-code/libgo.so ./
 
 RUN dotnet restore && \
     dotnet add package System.Device.Gpio --version 2.2.0-* && \
     dotnet publish --runtime linux-arm64 --self-contained -o out
 
 RUN cp libgo.so ./out 
-
 
 # Use the official .NET Docker image for ARM64 architecture
 FROM mcr.microsoft.com/dotnet/aspnet:8.0.3-jammy-arm64v8 AS runtime
@@ -46,7 +46,7 @@ RUN apt-get update && \
 WORKDIR /Project
 
 # Copy the compiled binary into the container
-COPY --from=builderDotNet /ProjectDotNet/out ./
+COPY --from=builderDotNet /ProjectDotNet/out .
 
 # Make the binary executable
 RUN chmod +x chat
