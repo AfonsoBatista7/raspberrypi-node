@@ -175,7 +175,7 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debu
 func Discover(ctx context.Context, host host.Host, dht *dht.IpfsDHT, playerId string) {
 	discovery = routing.NewRoutingDiscovery(kademliaDht)
 	util.Advertise(ctx, discovery, playerId)
-	util.Advertise(ctx, discovery, rendezvousString)
+	//util.Advertise(ctx, discovery, rendezvousString)
 
 	ticker := time.NewTicker(time.Second * 1)
 	defer ticker.Stop()
@@ -196,6 +196,9 @@ func Discover(ctx context.Context, host host.Host, dht *dht.IpfsDHT, playerId st
 				if peer.ID == host.ID() {
 					continue
 				}
+
+				logCallback(host.Network().Connectedness(peer.ID).String())
+
 				if host.Network().Connectedness(peer.ID) != network.Connected {
 					_, err = host.Network().DialPeer(ctx, peer.ID)
 					fmt.Printf("Connected to peer %s\n", peer.ID.String())
@@ -262,62 +265,44 @@ func connectToPeer(peerID string) {
 }
 
 func findPeer(peerID string) (peer.ID, error){
-	//var peerFound peer.AddrInfo
-        var foundPeers []peer.AddrInfo
+	var foundPeers []peer.AddrInfo
 
-        logCallback("Searching for peer...\n")
-//	for i := 0; i < 5; i++ {
-		
-        peerChan, err := discovery.FindPeers(contextVar, peerID)
-        if err != nil {
-                logCallback(fmt.Sprintf("Failed to find peer: %s\n", err))
-        }
+	logCallback("Searching for peer...\n")
 
-        //peerFound = <-peerChan
-
-        //logCallback(fmt.Sprintf("Peer found: %s\n", peerFound.ID.String()))
-        for peerFound := range peerChan {
-            if peerFound.ID.String() == "" {
-                continue
-            }
-
-            logCallback(fmt.Sprintf("Peer found: %s\n", peerFound.ID.String()))
-            foundPeers = append(foundPeers, peerFound)
-
-
-        }
-
-        if len(foundPeers) == 0 {
-                return "", errors.New("peer not found")
-        }
-
-	/*	
-		if peerFound.ID.String() != peerID {
-			time.Sleep(2 * time.Second)
-			logCallback(".\n")
-		} else {
-			break
-		}
+	peerChan, err := discovery.FindPeers(contextVar, peerID)
+	if err != nil {
+					logCallback(fmt.Sprintf("Failed to find peer: %s\n", err))
 	}
 
+	for peerFound := range peerChan {
+			if peerFound.ID.String() == "" {
+					continue
+			}
 
-	logCallback("Found peer!\n")*/
+			logCallback(fmt.Sprintf("Peer found: %s\n", peerFound.ID.String()))
+			foundPeers = append(foundPeers, peerFound)
+
+
+	}
+
+	if len(foundPeers) == 0 {
+					return "", errors.New("peer not found")
+	}
 
 	// Add the destination's peer multiaddress in the peerstore.
 	// This will be used during connection and stream creation by libp2p.
 	//hostData.Peerstore().AddAddrs(peerFound.ID, peerFound.Addrs, peerstore.PermanentAddrTTL)
 
-        for _, peer := range foundPeers {
-            if !strings.HasPrefix(peer.ID.String(), "12D3") {
-                // Add the peer address to the peerstore
-                hostData.Peerstore().AddAddrs(peer.ID, peer.Addrs, peerstore.PermanentAddrTTL)
+	for _, peer := range foundPeers {
+			if !strings.HasPrefix(peer.ID.String(), "12D3") {
+					// Add the peer address to the peerstore
+					hostData.Peerstore().AddAddrs(peer.ID, peer.Addrs, peerstore.PermanentAddrTTL)
 
-                return peer.ID, nil
-            }
-        }
+					return peer.ID, nil
+			}
+	}
 
-
-        return "", errors.New("no valid peers found")
+	return "", errors.New("no valid peers found")
 }
 
 func connectToPeerAction(peerID peer.ID) (*bufio.ReadWriter, error) {
