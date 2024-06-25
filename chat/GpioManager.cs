@@ -1,4 +1,5 @@
 using System.Device.Gpio;
+using System.Runtime.Serialization;
 
 namespace IoT {
 
@@ -44,7 +45,21 @@ namespace IoT {
             return _isLedOn;
         }
 
+        public bool SetState(int state) {
+            bool boolState = StateToBool(state);
+
+            if(boolState!=_isLedOn) {
+                if(boolState) TurnOnLight();
+                else TurnOffLight();
+            }
+
+            return _isLedOn;
+        }
+
         public void Dispose() {
+
+            TurnOffLight();
+
             if (_controller != null) {
                 _controller.ClosePin(_pinOutput);
                 _controller.ClosePin(_pinInput);
@@ -53,23 +68,35 @@ namespace IoT {
         }
 
         public void HandleVirtualStateChange(P2PEventArgs args) {
-            
+
+            //TODO - handle objectId
+            string objectId = args.Id;
+
+            PhysicalStateChangeEvent(new PinValueChangedEventArgs(PinEventTypes.None , _pinOutput), args.State);
         }
 
-        public void PhysicalStateChangeEvent(PinValueChangedEventArgs args) {
+        public void PhysicalStateChangeEvent(PinValueChangedEventArgs args, int state = -1) {
             //TODO - Better handling of the IoT ids
-            int id = args.PinNumber;
+            string id = args.PinNumber.ToString();
 
-            OnPhysicalStateChange?.Invoke(this, new GpioEventArgs(id, ToggleLight() ? 1 : 0));
+            //changing or setting the state
+            bool newState = state<0 ? ToggleLight() : SetState(state);
+
+            if(newState!=_isLedOn || state <0)
+                OnPhysicalStateChange?.Invoke(this, new GpioEventArgs(id, newState ? 1 : 0));
+        }
+
+        private bool StateToBool(int state) {
+            return state == 1;
         }
     }
 }
 
 public class GpioEventArgs : EventArgs {
     public int State { get; }
-    public int Id { get; }
+    public string Id { get; }
 
-    public GpioEventArgs(int id, int state) {
+    public GpioEventArgs(string id, int state) {
         State = state;
         Id = id;
     }

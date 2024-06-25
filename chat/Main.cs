@@ -1,4 +1,5 @@
-﻿using IoT;
+﻿using System.Device.Gpio;
+using IoT;
 using P2P;
 
 public class MainClass {
@@ -40,17 +41,9 @@ public class MainClass {
 
         Console.WriteLine("Waiting for connection...");
 
-        Console.Write("Press ENTER to Toggle the Light");
 
         string? end = "";
-        while (!end.Equals("exit")) {
-
-            if(P2pManager.isConnected) {
-                Console.ReadLine();
-
-                gpioManager.ToggleLight();
-            }
-        }
+        while (!end.Equals("exit")) { }
 
         P2pManager.OnVirtualStateChange -= (sender, args) => gpioManager.HandleVirtualStateChange(args);
         gpioManager.OnPhysicalStateChange -= (sender, args) => p2pManager.HandlePhysicalStateChange(args);

@@ -1,9 +1,6 @@
 package main
 
 // typedef void (*transfer_data)(const char*);
-// extern void getMessageMakeCallback(const char* message, transfer_data transfer) {
-//     transfer(message);
-// }
 // extern void debugLogMakeCallback(const char* log, transfer_data logFunc) {
 //     logFunc(log);
 // }
@@ -11,8 +8,8 @@ package main
 // extern void connectNotifyMakeCallback(notify notifyFunc) {
 //     notifyFunc();
 // }
-// typedef void (*virtual_state)(int id, int state);
-// extern void virtualStateChangeMakeCallback(int id, int state, virtual_state virtualStateChangeFunc) {
+// typedef void (*virtual_state)(const char*, int);
+// extern void virtualStateChangeMakeCallback(const char* id, int state, virtual_state virtualStateChangeFunc) {
 //     virtualStateChangeFunc(id, state);
 // }
 import "C"
@@ -23,6 +20,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 	"time"
 
@@ -39,12 +37,10 @@ import (
 	"github.com/multiformats/go-multiaddr"
 )
 
-type transferData func(message string)
 type debugLog func(log string)
 type connectNotify func()
-type virtualStateChange func(id int, state int)
+type virtualStateChange func(id string, state int)
 
-var transferCallback transferData 
 var logCallback debugLog 
 var connectNotifyCallback connectNotify
 var virtualStateChangeCallback virtualStateChange 
@@ -77,13 +73,15 @@ func readData(rw *bufio.ReadWriter) {
 	for {
 		str, _ := rw.ReadString('\n')
 
-		if str == "" {
-			return
+		id := strings.Split(str, ":")[0]
+		state, err := strconv.Atoi(strings.TrimSpace(strings.Split(str, ":")[1]))
+
+		if err != nil {
+			logCallback(fmt.Sprintf("State not an integer: %s\n", err))
+		} else {
+			virtualStateChangeCallback(id, state)
 		}
 
-		if str != "\n" {
-			transferCallback(str)
-		}
 	}
 }
 
@@ -96,7 +94,7 @@ func writeData(sendData string) {
   }
 }
 
-func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goTransfer transferData, goDebugLog debugLog, goConnectNotify connectNotify, goVirtualStateChange virtualStateChange, debug bool, playerId string) {
+func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debugLog, goConnectNotify connectNotify, goVirtualStateChange virtualStateChange, debug bool, playerId string) {
 
 	readWriter = make([]*bufio.ReadWriter, 0, 5)
 
@@ -104,7 +102,6 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goTransfer tran
 	defer cancel()
 
 	contextVar = ctx
-	transferCallback = goTransfer
 	logCallback = goDebugLog
 	connectNotifyCallback = goConnectNotify
 	virtualStateChangeCallback = goVirtualStateChange
@@ -127,9 +124,9 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goTransfer tran
 
 	if(debug) {
 		bootstrapPeers = make([]peer.AddrInfo, len(dht.DefaultBootstrapPeers))
-                for i, addr := range dht.DefaultBootstrapPeers {
-                        peerinfo, _ := peer.AddrInfoFromP2pAddr(addr)
-                        bootstrapPeers[i] = *peerinfo
+		for i, addr := range dht.DefaultBootstrapPeers {
+			peerinfo, _ := peer.AddrInfoFromP2pAddr(addr)
+			bootstrapPeers[i] = *peerinfo
 		}
 	} else {
 		bootstrapPeers = make([]peer.AddrInfo, len(cBootstrapPeers))
@@ -154,7 +151,7 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goTransfer tran
 	time.Sleep(5 * time.Second)
 
 	discovery = routing.NewRoutingDiscovery(kademliaDht)
-	util.Advertise(ctx, discovery, playerId/*h.ID().String()*/)
+	util.Advertise(ctx, discovery, playerId)
 
 	// Wait until the peer is terminated
 	<-p.done
@@ -182,9 +179,7 @@ func makeHost(randomness io.Reader) (host.Host, error) {
 
 		// Attempt to open ports using uPNP for NATed hosts.
 		libp2p.NATPortMap(),
-
 		libp2p.EnableHolePunching(),
-		//libp2p.EnableAutoRelayWithPeerSource(dht.DefaultBootstrapPeers),
 	)
 }
 
@@ -204,12 +199,6 @@ func connectToPeer(peerID string) {
 		logCallback(fmt.Sprintf("%s\n", err))
 		return
 	}
-
-	/*peerIdObj, err := peer.Decode(peerID)
-	if err != nil {
-		logCallback(fmt.Sprintf("Failed to decode peer ID: %s\n", err))
-		return
-	}*/
 
 	rw, err := connectToPeerAction(peerIdObj)
 	if err != nil {
