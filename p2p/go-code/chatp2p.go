@@ -186,25 +186,22 @@ func Discover(ctx context.Context, host host.Host, dht *dht.IpfsDHT, playerId st
 			return
 		case <-ticker.C:
 
-			peers, err := util.FindPeers(ctx, discovery, rendezvousString)
-
-			if err != nil {
-				logCallback("x")
-			}
+			peers, _ := util.FindPeers(ctx, discovery, rendezvousString)
 
 			for _, peer := range peers {
 				if peer.ID == host.ID() {
 					continue
 				}
 
-				logCallback(host.Network().Connectedness(peer.ID).String())
-
 				if host.Network().Connectedness(peer.ID) != network.Connected {
-					_, err = host.Network().DialPeer(ctx, peer.ID)
-					fmt.Printf("Connected to peer %s\n", peer.ID.String())
+					_, err := host.Network().DialPeer(ctx, peer.ID)
+
 					if err != nil {
+						logCallback(fmt.Sprintf("x: %s", err))
 						continue
 					}
+
+					logCallback(fmt.Sprintf("Connected to peer %s\n", peer.ID.String()))
 				}
 			}
 		}
