@@ -101,7 +101,7 @@ func connectBootstrapPeer(ctx context.Context, host host.Host, peerinfo peer.Add
 		defer wg.Done()
 
 		if err := host.Connect(ctx, peerinfo); err != nil {
-			logCallback(fmt.Sprintf("Failed to connect to bootstrap node %s: %s\n", peerinfo.ID, err))
+			logCallback("x\n")
 		} else {
 			logCallback(".\n")
 		}
