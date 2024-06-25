@@ -34,7 +34,6 @@ import (
 	"github.com/libp2p/go-libp2p/core/peerstore"
 	"github.com/libp2p/go-libp2p/p2p/discovery/routing"
 	"github.com/libp2p/go-libp2p/p2p/discovery/util"
-
 	"github.com/multiformats/go-multiaddr"
 )
 
@@ -189,17 +188,12 @@ func Discover(ctx context.Context, host host.Host, dht *dht.IpfsDHT, playerId st
 			peers, _ := util.FindPeers(ctx, discovery, rendezvousString)
 
 			for _, peer := range peers {
-				if peer.ID == host.ID() {
-					continue
-				}
+				if peer.ID == host.ID() { continue }
 
 				if host.Network().Connectedness(peer.ID) != network.Connected {
 					_, err := host.Network().DialPeer(ctx, peer.ID)
 
-					if err != nil {
-						logCallback(fmt.Sprintf("x: %s", err))
-						continue
-					}
+					if err != nil { continue }
 
 					logCallback(fmt.Sprintf("Connected to peer %s\n", peer.ID.String()))
 				}
