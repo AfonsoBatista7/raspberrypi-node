@@ -62,12 +62,13 @@ namespace P2P {
         // Closing PEER
         public void StopPeer() => ClosePeer();
 
-        public void PropagateLightState(int state) {
+        public void PropagateLightState(string id, int state) {
             Console.WriteLine($"NEW STATE PROPAGATED: {state}");
+            PropagateData($"{id:state}");
         }
 
         public void HandlePhysicalStateChange(GpioEventArgs args) {
-            PropagateLightState(args.State);
+            PropagateLightState(args.Id, args.State);
         }
 
     }
