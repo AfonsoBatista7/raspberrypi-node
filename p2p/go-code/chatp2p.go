@@ -164,14 +164,14 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debu
 	}
 	wg.Wait()
 
-	Discover(ctx, host, kademliaDht, playerId)
+	p.Discover(ctx, host, kademliaDht, playerId)
 
 	<- p.done
 	// Wait until the peer is terminated
 	logCallback("Closing peer...")
 }
 
-func Discover(ctx context.Context, host host.Host, dht *dht.IpfsDHT, playerId string) {
+func (p *PeerManager) Discover(ctx context.Context, host host.Host, dht *dht.IpfsDHT, playerId string) {
 	discovery = routing.NewRoutingDiscovery(kademliaDht)
 	util.Advertise(ctx, discovery, playerId)
 	//util.Advertise(ctx, discovery, rendezvousString)
@@ -181,7 +181,7 @@ func Discover(ctx context.Context, host host.Host, dht *dht.IpfsDHT, playerId st
 
 	for {
 		select {
-		case <- ctx.Done():
+		case <- p.done:
 			return
 		case <-ticker.C:
 
@@ -201,7 +201,6 @@ func Discover(ctx context.Context, host host.Host, dht *dht.IpfsDHT, playerId st
 		}
 	}
 }
-
 
 func makeHost(randomness io.Reader) (host.Host, error) {
 	// Creates a new RSA key pair for this host.
