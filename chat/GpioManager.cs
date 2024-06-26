@@ -80,9 +80,10 @@ namespace IoT {
             string id = args.PinNumber.ToString();
 
             //changing or setting the state
+            bool oldState =_isLedOn;
             bool newState = state<0 ? ToggleLight() : SetState(state);
 
-            if(newState!=_isLedOn || state <0)
+            if(newState!=oldState || state <0)
                 OnPhysicalStateChange?.Invoke(this, new GpioEventArgs(id, newState ? 1 : 0));
         }
 
