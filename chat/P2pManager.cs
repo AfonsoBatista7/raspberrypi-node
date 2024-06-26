@@ -64,7 +64,8 @@ namespace P2P {
 
         public void PropagateLightState(string id, int state) {
             Console.WriteLine($"NEW STATE PROPAGATED: {state}");
-            PropagateData($"{id:state}");
+
+            PropagateData($"{id}:{state}");
         }
 
         public void HandlePhysicalStateChange(GpioEventArgs args) {
