@@ -166,15 +166,15 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debu
 
 	p.Discover(ctx, host, kademliaDht, playerId)
 
-	<- p.done
 	// Wait until the peer is terminated
+	<- p.done
 	logCallback("Closing peer...")
 }
 
 func (p *PeerManager) Discover(ctx context.Context, host host.Host, dht *dht.IpfsDHT, playerId string) {
 	discovery = routing.NewRoutingDiscovery(kademliaDht)
 	util.Advertise(ctx, discovery, playerId)
-	//util.Advertise(ctx, discovery, rendezvousString)
+	util.Advertise(ctx, discovery, rendezvousString)
 
 	ticker := time.NewTicker(time.Second * 1)
 	defer ticker.Stop()
