@@ -22,7 +22,6 @@ import (
 	"io"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/libp2p/go-libp2p"
@@ -96,20 +95,6 @@ func writeData(sendData string) {
   }
 }
 
-func connectBootstrapPeer(ctx context.Context, host host.Host, peerinfo peer.AddrInfo, wg *sync.WaitGroup) {
-	wg.Add(1)
-
-	go func () {
-		defer wg.Done()
-
-		if err := host.Connect(ctx, peerinfo); err != nil {
-			logCallback("x")
-		} else {
-			logCallback(".")
-		}
-	}()
-}
-
 func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debugLog, goConnectNotify connectNotify, goVirtualStateChange virtualStateChange, debug bool, playerId string) {
 
 	readWriter = make([]*bufio.ReadWriter, 0, 5)
@@ -136,7 +121,23 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debu
 
 	logCallback(fmt.Sprintf("Debug mode: %t\n", debug))
 
-	kademliaDht, err = dht.New(ctx, host)
+	var bootstrapPeers []peer.AddrInfo
+
+	if(debug) {
+		bootstrapPeers = make([]peer.AddrInfo, len(dht.DefaultBootstrapPeers))
+		for i, addr := range dht.DefaultBootstrapPeers {
+			peerinfo, _ := peer.AddrInfoFromP2pAddr(addr)
+			bootstrapPeers[i] = *peerinfo
+		}
+	} else {
+		bootstrapPeers = make([]peer.AddrInfo, len(cBootstrapPeers))
+		for i, addr := range cBootstrapPeers {
+			peerinfo, _ := peer.AddrInfoFromString(addr)
+			bootstrapPeers[i] = *peerinfo
+		}
+	}
+
+	kademliaDht, err = dht.New(ctx, host, dht.BootstrapPeers(bootstrapPeers...))
 	if err != nil {
 		logCallback(fmt.Sprintf("Failed to create DHT: %s\n", err))
 	}
@@ -147,22 +148,7 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debu
 		logCallback(fmt.Sprintf("Failed to bootstrap the DHT: %s\n", err))
 	}
 
-	var wg sync.WaitGroup
-
-	if(debug) {
-		for _, addr := range dht.DefaultBootstrapPeers {
-			peerinfo, _ := peer.AddrInfoFromP2pAddr(addr)
-			
-			connectBootstrapPeer(ctx, hostData, *peerinfo, &wg)
-		}
-	} else {
-		for _, addr := range cBootstrapPeers {
-			peerinfo, _ := peer.AddrInfoFromString(addr)
-
-			connectBootstrapPeer(ctx, hostData, *peerinfo, &wg)
-		}
-	}
-	wg.Wait()
+	time.Sleep(5 * time.Second)
 
 	p.Discover(ctx, host, kademliaDht, playerId)
 
