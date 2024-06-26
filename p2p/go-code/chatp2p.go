@@ -26,6 +26,7 @@ import (
 
 	"github.com/libp2p/go-libp2p"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
+	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	"github.com/libp2p/go-libp2p/core/crypto"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
@@ -49,6 +50,7 @@ var hostData host.Host
 var contextVar context.Context
 var kademliaDht *dht.IpfsDHT
 var discovery *routing.RoutingDiscovery
+var topic *pubsub.Topic
 
 var rendezvousString = "IOT"
 
@@ -82,17 +84,7 @@ func readData(rw *bufio.ReadWriter) {
 		} else {
 			virtualStateChangeCallback(id, state)
 		}
-
 	}
-}
-
-func writeData(sendData string) {
-	//TODO: Need to handle one readWriter per peer 
-
-  for i := 0; i < len(readWriter); i++ {
-		readWriter[i].WriteString(fmt.Sprintf("%s\n", sendData))
-		readWriter[i].Flush()
-  }
 }
 
 func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debugLog, goConnectNotify connectNotify, goVirtualStateChange virtualStateChange, debug bool, playerId string) {
@@ -150,7 +142,22 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debu
 
 	time.Sleep(5 * time.Second)
 
-	p.Discover(ctx, host, kademliaDht, playerId)
+	// create a new PubSub service using the GossipSub router
+	gossipSub, err := pubsub.NewGossipSub(ctx, host)
+	if err != nil {
+		logCallback(fmt.Sprintf("Failed to create GossipSub: %s\n", err))	
+		p.done <- true
+	}
+
+	go p.Discover(ctx, host, kademliaDht, playerId)
+
+	// join the pubsub topic
+	room := "iot"
+	topic, err = gossipSub.Join(room)
+	if err != nil {
+		logCallback(fmt.Sprintf("Failed to join topic: %s\n", err))	
+		p.done <- true
+	}
 
 	// Wait until the peer is terminated
 	<- p.done
@@ -185,6 +192,16 @@ func (p *PeerManager) Discover(ctx context.Context, host host.Host, dht *dht.Ipf
 				}
 			}
 		}
+	}
+}
+
+// publish to topic
+func publish(stateData string) {
+	if len(stateData) != 0 {
+
+		// publish message to topic
+		bytes := []byte(stateData)
+		topic.Publish(contextVar, bytes)
 	}
 }
 

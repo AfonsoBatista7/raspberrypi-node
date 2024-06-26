@@ -23,8 +23,8 @@ namespace P2P {
             public static extern void StartP2P(string[] bootstrapAddrs, int bootstrapCount, CallbackDelegate logCallback,
                 ConnectNotify connectNotify, CallbackVirtualStateChange virtualState, bool debug, string playerId);
 
-            [DllImport(LIBNAME, EntryPoint = "WriteData", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void WriteData(string sendData); 
+            [DllImport(LIBNAME, EntryPoint = "PropagateData", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void PropagateData(string sendData); 
 
             [DllImport(LIBNAME, EntryPoint = "ClosePeer", CallingConvention = CallingConvention.Cdecl)]
             public static extern void ClosePeer(); 
