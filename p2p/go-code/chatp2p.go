@@ -44,7 +44,6 @@ var logCallback debugLog
 var connectNotifyCallback connectNotify
 var virtualStateChangeCallback virtualStateChange 
 
-var readWriter []*bufio.ReadWriter 
 var hostData host.Host
 var contextVar context.Context
 var kademliaDht *dht.IpfsDHT
@@ -59,21 +58,22 @@ func handleStream(s network.Stream) {
 	connectNotifyCallback()
 
 	// Create a buffer stream for non-blocking read and write.
-	if(cap(readWriter) != len(readWriter)) {
-		rw := bufio.NewReadWriter(bufio.NewReader(s), bufio.NewWriter(s))
-		readWriter = append(readWriter, rw) 
-
-		go readData(rw)
-	} else {
-		logCallback("Buffer full")
-	}
+	rw := bufio.NewReadWriter(bufio.NewReader(s), bufio.NewWriter(s))
+	go readData(s, rw)
 }
 
-func readData(rw *bufio.ReadWriter) {
+func readData(s network.Stream, rw *bufio.ReadWriter) {
 
 	logCallback("Reading Data...")
 	for {
 		str, _ := rw.ReadString('\n')
+
+		logCallback(fmt.Sprintf("Received data: %s\n", str))
+		if(str == "") {
+			s.Close()
+			logCallback("Closing connection...")
+			return
+		}
 
 		id := strings.Split(str, ":")[0]
 		state, err := strconv.Atoi(strings.TrimSpace(strings.Split(str, ":")[1]))
@@ -87,8 +87,6 @@ func readData(rw *bufio.ReadWriter) {
 }
 
 func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debugLog, goConnectNotify connectNotify, goVirtualStateChange virtualStateChange, debug bool, playerId string) {
-
-	readWriter = make([]*bufio.ReadWriter, 0, 5)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
