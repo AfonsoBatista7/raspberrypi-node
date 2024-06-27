@@ -110,6 +110,8 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debu
 
 	hostData = host
 
+	host.SetStreamHandler("/metaverse/1.0.0", handleStream)
+
 	logCallback(fmt.Sprintf("Debug mode: %t\n", debug))
 
 	var bootstrapPeers []peer.AddrInfo
