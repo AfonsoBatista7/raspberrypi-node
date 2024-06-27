@@ -68,10 +68,8 @@ func readData(s network.Stream, rw *bufio.ReadWriter) {
 	for {
 		str, _ := rw.ReadString('\n')
 
-		logCallback(fmt.Sprintf("Received data: %s\n", str))
 		if(str == "") {
 			s.Close()
-			logCallback("Closing connection...")
 			return
 		}
 
