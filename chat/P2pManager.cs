@@ -28,9 +28,6 @@ namespace P2P {
 
             [DllImport(LIBNAME, EntryPoint = "ClosePeer", CallingConvention = CallingConvention.Cdecl)]
             public static extern void ClosePeer(); 
-
-            [DllImport(LIBNAME, EntryPoint = "ConnectToPeer", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void ConnectToPeer(string peerID);
         #endregion
 
         #region Callback Methods

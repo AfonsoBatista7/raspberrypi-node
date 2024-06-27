@@ -17,7 +17,6 @@ import (
 	"bufio"
 	"context"
 	"crypto/rand"
-	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -31,9 +30,9 @@ import (
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
-	"github.com/libp2p/go-libp2p/core/peerstore"
 	"github.com/libp2p/go-libp2p/p2p/discovery/routing"
 	"github.com/libp2p/go-libp2p/p2p/discovery/util"
+	quic "github.com/libp2p/go-libp2p/p2p/transport/quic"
 	"github.com/multiformats/go-multiaddr"
 )
 
@@ -221,6 +220,7 @@ func makeHost(randomness io.Reader) (host.Host, error) {
 	// Other options can be added here.
 	return libp2p.New(
 		libp2p.ListenAddrs(sourceMultiAddrTCP, sourceMultiAddrUDP),
+		libp2p.Transport(quic.NewTransport),
 		libp2p.Identity(prvKey),
 
 		// Attempt to open ports using uPNP for NATed hosts.
@@ -236,81 +236,6 @@ func startPeer(h host.Host, streamHandler network.StreamHandler) {
 	h.SetStreamHandler("/chat/1.0.0", streamHandler)
 
 	logCallback(fmt.Sprintf("My peer ID -> %s", h.ID()))
-}
-
-func connectToPeer(peerID string) {
-
-	peerIdObj, err := findPeer(peerID)
-	if err != nil {
-		logCallback(fmt.Sprintf("%s\n", err))
-		return
-	}
-
-	rw, err := connectToPeerAction(peerIdObj)
-	if err != nil {
-		logCallback(fmt.Sprintf("Failed to start protocol: %s\n", err))
-		return
-	}
-
-	readWriter = append(readWriter, rw)
-
-	go readData(rw)
-}
-
-func findPeer(peerID string) (peer.ID, error){
-	var foundPeers []peer.AddrInfo
-
-	logCallback("Searching for peer...\n")
-
-	peerChan, err := discovery.FindPeers(contextVar, peerID)
-	if err != nil {
-					logCallback(fmt.Sprintf("Failed to find peer: %s\n", err))
-	}
-
-	for peerFound := range peerChan {
-			if peerFound.ID.String() == "" {
-					continue
-			}
-
-			logCallback(fmt.Sprintf("Peer found: %s\n", peerFound.ID.String()))
-			foundPeers = append(foundPeers, peerFound)
-
-
-	}
-
-	if len(foundPeers) == 0 {
-					return "", errors.New("peer not found")
-	}
-
-	// Add the destination's peer multiaddress in the peerstore.
-	// This will be used during connection and stream creation by libp2p.
-	//hostData.Peerstore().AddAddrs(peerFound.ID, peerFound.Addrs, peerstore.PermanentAddrTTL)
-
-	for _, peer := range foundPeers {
-			if !strings.HasPrefix(peer.ID.String(), "12D3") {
-					// Add the peer address to the peerstore
-					hostData.Peerstore().AddAddrs(peer.ID, peer.Addrs, peerstore.PermanentAddrTTL)
-
-					return peer.ID, nil
-			}
-	}
-
-	return "", errors.New("no valid peers found")
-}
-
-func connectToPeerAction(peerID peer.ID) (*bufio.ReadWriter, error) {
-
-	// Start a stream with the destination.
-	// Multiaddress of the destination peer is fetched from the peerstore using 'peerId'.
-	s, err := hostData.NewStream(context.Background(), peerID, "/chat/1.0.0")
-	if err != nil {
-		logCallback(fmt.Sprintf("Failed to create new stream: %s\n", err))
-		return nil, err
-	}
-	logCallback("Established connection to destination")
-
-	// Create a buffered stream so that read and writes are non-blocking.
-	return bufio.NewReadWriter(bufio.NewReader(s), bufio.NewWriter(s)), nil
 }
 
 func (p *PeerManager) closePeer() {

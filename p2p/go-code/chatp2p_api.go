@@ -53,11 +53,6 @@ func PropagateData(stateData *C.char) {
 	go publish(C.GoString(stateData))
 }
 
-//export ConnectToPeer
-func ConnectToPeer(peerID *C.char) {
-	go connectToPeer(C.GoString(peerID))
-}
-
 //export ClosePeer
 func ClosePeer() {
 	go pm.closePeer()
