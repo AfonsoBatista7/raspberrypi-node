@@ -106,9 +106,9 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debu
 		return
 	}
 
-	hostData = host
+	logCallback(fmt.Sprintf("My peer ID -> %s", host.ID()))
 
-	startPeer(hostData, handleStream)
+	hostData = host
 
 	logCallback(fmt.Sprintf("Debug mode: %t\n", debug))
 
@@ -227,15 +227,7 @@ func makeHost(randomness io.Reader) (host.Host, error) {
 		libp2p.NATPortMap(),
 		libp2p.EnableHolePunching(),
 	)
-}
 
-func startPeer(h host.Host, streamHandler network.StreamHandler) {
-	// Set a function as stream handler.
-	// This function is called when a peer connects, and starts a stream with this protocol.
-	// Only applies on the receiving side.
-	h.SetStreamHandler("/chat/1.0.0", streamHandler)
-
-	logCallback(fmt.Sprintf("My peer ID -> %s", h.ID()))
 }
 
 func (p *PeerManager) closePeer() {
