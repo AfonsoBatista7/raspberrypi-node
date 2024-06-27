@@ -215,13 +215,13 @@ func makeHost(randomness io.Reader) (host.Host, error) {
 	}
 
 	// 0.0.0.0 will listen on any interface device.
-	sourceMultiAddrTCP, _ := multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/4001")
+	//sourceMultiAddrTCP, _ := multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/4001")
 	sourceMultiAddrUDP, _ := multiaddr.NewMultiaddr("/ip4/0.0.0.0/udp/4001/quic-v1")
 
 	// libp2p.New constructs a new libp2p Host.
 	// Other options can be added here.
 	return libp2p.New(
-		libp2p.ListenAddrs(sourceMultiAddrTCP, sourceMultiAddrUDP),
+		libp2p.ListenAddrs(/*sourceMultiAddrTCP,*/ sourceMultiAddrUDP),
 		libp2p.Transport(quic.NewTransport),
 		libp2p.Identity(prvKey),
 
