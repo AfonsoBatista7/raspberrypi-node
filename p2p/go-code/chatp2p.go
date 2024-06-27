@@ -51,7 +51,7 @@ var kademliaDht *dht.IpfsDHT
 var discovery *routing.RoutingDiscovery
 var topic *pubsub.Topic
 
-var rendezvousString = "IOT"
+var rendezvousString = "METAVERSE"
 
 // Will only be run on the receiving side.
 func handleStream(s network.Stream) {
@@ -111,8 +111,6 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debu
 	hostData = host
 
 	host.SetStreamHandler("/metaverse/1.0.0", handleStream)
-
-	logCallback(fmt.Sprintf("Debug mode: %t\n", debug))
 
 	var bootstrapPeers []peer.AddrInfo
 
@@ -234,6 +232,7 @@ func makeHost(randomness io.Reader) (host.Host, error) {
 
 func (p *PeerManager) closePeer() {
 	if(hostData != nil) {
+		topic.Close()
 		hostData.Close()
 		p.done <- true
 	}
