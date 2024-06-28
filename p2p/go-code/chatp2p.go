@@ -229,6 +229,7 @@ func makeHost(randomness io.Reader) (host.Host, error) {
 func (p *PeerManager) closePeer() {
 	if(hostData != nil) {
 		topic.Close()
+		kademliaDht.Close()
 		hostData.Close()
 		p.done <- true
 	}
