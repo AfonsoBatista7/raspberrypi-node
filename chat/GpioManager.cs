@@ -78,7 +78,7 @@ namespace IoT {
             //TODO - Better handling of the IoT ids
             string id = args.PinNumber.ToString();
 
-            ToggleLight() 
+            ToggleLight();
 
             OnPhysicalStateChange?.Invoke(this, new GpioEventArgs(id, _isLedOn));
         }
