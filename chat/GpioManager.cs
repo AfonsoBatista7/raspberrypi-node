@@ -71,7 +71,7 @@ namespace IoT {
 
             //TODO - handle objectId
             string objectId = args.Id;
-            SetState(state);
+            SetState(args.State);
         }
 
         public void PhysicalStateChangeEvent(PinValueChangedEventArgs args) {
