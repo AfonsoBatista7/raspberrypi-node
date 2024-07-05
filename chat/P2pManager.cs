@@ -23,14 +23,11 @@ namespace P2P {
             public static extern void StartP2P(string[] bootstrapAddrs, int bootstrapCount, CallbackDelegate logCallback,
                 ConnectNotify connectNotify, CallbackVirtualStateChange virtualState, bool debug, string playerId);
 
-            [DllImport(LIBNAME, EntryPoint = "WriteData", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void WriteData(string sendData); 
+            [DllImport(LIBNAME, EntryPoint = "PropagateData", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void PropagateData(string sendData); 
 
             [DllImport(LIBNAME, EntryPoint = "ClosePeer", CallingConvention = CallingConvention.Cdecl)]
             public static extern void ClosePeer(); 
-
-            [DllImport(LIBNAME, EntryPoint = "ConnectToPeer", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void ConnectToPeer(string peerID);
         #endregion
 
         #region Callback Methods
@@ -62,12 +59,14 @@ namespace P2P {
         // Closing PEER
         public void StopPeer() => ClosePeer();
 
-        public void PropagateLightState(int state) {
+        public void PropagateLightState(string id, int state) {
             Console.WriteLine($"NEW STATE PROPAGATED: {state}");
+
+            PropagateData($"{id}:{state}");
         }
 
         public void HandlePhysicalStateChange(GpioEventArgs args) {
-            PropagateLightState(args.State);
+            PropagateLightState(args.Id, args.State);
         }
 
     }
