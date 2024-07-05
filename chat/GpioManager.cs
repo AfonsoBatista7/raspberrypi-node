@@ -71,19 +71,16 @@ namespace IoT {
 
             //TODO - handle objectId
             string objectId = args.Id;
-
-            PhysicalStateChangeEvent(new PinValueChangedEventArgs(PinEventTypes.None , _pinOutput), args.State);
+            SetState(args.State);
         }
 
-        public void PhysicalStateChangeEvent(PinValueChangedEventArgs args, int state = -1) {
+        public void PhysicalStateChangeEvent(PinValueChangedEventArgs args) {
             //TODO - Better handling of the IoT ids
             string id = args.PinNumber.ToString();
 
-            //changing or setting the state
-            bool newState = state<0 ? ToggleLight() : SetState(state);
+            ToggleLight();
 
-            if(newState!=_isLedOn || state <0)
-                OnPhysicalStateChange?.Invoke(this, new GpioEventArgs(id, newState ? 1 : 0));
+            OnPhysicalStateChange?.Invoke(this, new GpioEventArgs(id, _isLedOn ? 1 : 0));
         }
 
         private bool StateToBool(int state) {

@@ -42,8 +42,7 @@ public class MainClass {
         Console.WriteLine("Waiting for connection...");
 
 
-        string? end = "";
-        while (!end.Equals("exit")) { }
+        string? end = Console.ReadLine();
 
         P2pManager.OnVirtualStateChange -= (sender, args) => gpioManager.HandleVirtualStateChange(args);
         gpioManager.OnPhysicalStateChange -= (sender, args) => p2pManager.HandlePhysicalStateChange(args);

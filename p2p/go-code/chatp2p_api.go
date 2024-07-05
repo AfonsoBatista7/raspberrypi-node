@@ -48,14 +48,9 @@ func StartP2P(bootstrapPeers **C.char, bootstrapCount int, debugLog C.transfer_d
 	go pm.startProtocolP2P(goBootstrapPeers, goDebugLog, goConnectNotify, goVirtualStateChange, debug, C.GoString(playerId))
 }
 
-//export WriteData
-func WriteData(sendData *C.char) {
-	go writeData(C.GoString(sendData))
-}
-
-//export ConnectToPeer
-func ConnectToPeer(peerID *C.char) {
-	go connectToPeer(C.GoString(peerID))
+//export PropagateData
+func PropagateData(stateData *C.char) {
+	go publish(C.GoString(stateData))
 }
 
 //export ClosePeer
