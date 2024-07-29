@@ -36,7 +36,7 @@ public class MainClass {
             }
         }
 
-        if(bootstrapAddrs.Length==0) Console.WriteLine([DEBUG MODE]);
+        if(bootstrapAddrs.Length==0) Console.WriteLine("[DEBUG MODE]");
 
         objectId = Guid.NewGuid().ToString();
         Console.WriteLine($"Object Id -> {objectId}");
