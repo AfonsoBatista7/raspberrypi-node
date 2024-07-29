@@ -29,7 +29,7 @@ COPY --from=builderGo /ProjectGo/go-code/libgo.so ./
 
 RUN dotnet restore && \
     dotnet add package System.Device.Gpio --version 2.2.0-* && \
-    dotnet publish --runtime linux-arm64 --self-contained -o out
+    dotnet publish --runtime linux-arm64 --self-contained -o out -p:DefineConstants=CENTRALIZED_ARCH_TEST
 
 RUN cp libgo.so ./out 
 
@@ -38,9 +38,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0.3-jammy-arm64v8 AS runtime
 
 # Install necessary packages for GPIO access
 RUN apt-get update && \
-    apt-get install -y \
-    libgpiod2 \
-    libgpiod-dev
+    apt-get install -y 
+#   libgpiod2 \
+#   libgpiod-dev
 
 # Set the working directory inside the container
 WORKDIR /Project
