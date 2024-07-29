@@ -8,8 +8,8 @@ using System.Net;
 
 public class MainClass {
 
-#if CENTRALIZED_ARCH_TEST 
-    public static async void SendRequest() {
+#if CENTRALIZED_ARCH_TEST
+    public static async Task SendRequest() {
         using var client = new HttpClient
         {
             DefaultRequestVersion =  HttpVersion.Version30,
@@ -24,7 +24,7 @@ public class MainClass {
     }
 #endif
 
-    static void Main(string[] args) {
+    static async Task Main(string[] args) {
         int pinOutput = 18,
             pinInput = 17;
 
@@ -78,9 +78,10 @@ public class MainClass {
         gpioManager.OnPhysicalStateChange -= (sender, args) => p2pManager.HandlePhysicalStateChange(args);
 
         p2pManager.StopPeer();
-#else
         Console.WriteLine("CENTRALIZED");
-        SendRequest();
+
+#else
+        await SendRequest();
         
 #endif
 
