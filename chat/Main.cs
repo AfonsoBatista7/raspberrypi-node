@@ -10,11 +10,7 @@ public class MainClass {
 
 #if CENTRALIZED_ARCH_TEST
     public static async Task SendRequest() {
-        using var client = new HttpClient
-        {
-            DefaultRequestVersion =  HttpVersion.Version30,
-            DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact
-        };
+        using var client = new HttpClient();
         HttpResponseMessage resp = await client.GetAsync("https://cloudflare-quic.com");
         string body = await resp.Content.ReadAsStringAsync();
 
