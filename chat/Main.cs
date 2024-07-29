@@ -8,6 +8,22 @@ using System.Net;
 
 public class MainClass {
 
+#if CENTRALIZED_ARCH_TEST 
+    public static async void SendRequest() {
+        using var client = new HttpClient
+        {
+            DefaultRequestVersion =  HttpVersion.Version30,
+            DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact
+        };
+        HttpResponseMessage resp = await client.GetAsync("https://cloudflare-quic.com");
+        string body = await resp.Content.ReadAsStringAsync();
+
+        Console.WriteLine(
+            $"status: {resp.StatusCode}, version: {resp.Version}, " +
+            $"body: {body.Substring(0, Math.Min(100, body.Length))}");
+    }
+#endif
+
     static void Main(string[] args) {
         int pinOutput = 18,
             pinInput = 17;
@@ -36,7 +52,7 @@ public class MainClass {
             }
         }
 
-        if(bootstrapAddrs.Length==0) Console.WriteLine("[DEBUG MODE]");
+        if (bootstrapAddrs.Length == 0) Console.WriteLine("[DEBUG MODE]");
 
         objectId = Guid.NewGuid().ToString();
         Console.WriteLine($"Object Id -> {objectId}");
@@ -64,18 +80,8 @@ public class MainClass {
         p2pManager.StopPeer();
 #else
         Console.WriteLine("CENTRALIZED");
+        SendRequest();
         
-        using var client = new HttpClient
-        {
-            DefaultRequestVersion =  HttpVersion.Version30,
-            DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact
-        };
-        HttpResponseMessage resp = await client.GetAsync("https://cloudflare-quic.com");
-        string body = await resp.Content.ReadAsStringAsync();
-
-        Console.WriteLine(
-            $"status: {resp.StatusCode}, version: {resp.Version}, " +
-            $"body: {body.Substring(0, Math.Min(100, body.Length))}");
 #endif
 
     }
