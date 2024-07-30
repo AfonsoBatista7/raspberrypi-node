@@ -26,6 +26,7 @@ public class HttpServer
         if (_listener!=null && _listener.IsListening) {
             var context = _listener.EndGetContext(result);
             var request = context.Request;
+            var response = context.Response;
 
             // do something with the request
             Console.WriteLine($"{request.Url}");
@@ -36,25 +37,18 @@ public class HttpServer
                 var encoding = request.ContentEncoding;
                 var reader = new StreamReader(body, encoding);
 
-                if (request.ContentType != null) {
-                    Console.WriteLine("Client data content type {0}", request.ContentType);
-                }
-
-                Console.WriteLine("Client data content length {0}", request.ContentLength64);
-
-                Console.WriteLine("Start of data:");
                 string s = reader.ReadToEnd();
                 Console.WriteLine(s);
-                Console.WriteLine("End of data:");
                 reader.Close();
                 body.Close();
 
-                var response = context.Response;
                 response.StatusCode = (int)HttpStatusCode.OK;
                 response.ContentType = "text/plain";
                 response.OutputStream.Write(new byte[] { }, 0, 0);
-                response.OutputStream.Close();
-            }
+
+            } else response.StatusCode = (int)HttpStatusCode.NotAcceptable;
+
+            response.OutputStream.Close();
 
             Receive();
         }
