@@ -3,32 +3,24 @@ using IoT;
 #if !CENTRALIZED_ARCH_TEST 
 using P2P;
 #else
-using System.Net;
+using Centralized;
 #endif
 
 public class MainClass {
 
-#if CENTRALIZED_ARCH_TEST
-    public static async Task SendRequest() {
-        using var client = new HttpClient();
-        HttpResponseMessage resp = await client.GetAsync("https://cloudflare-quic.com");
-        string body = await resp.Content.ReadAsStringAsync();
-
-        Console.WriteLine(
-            $"status: {resp.StatusCode}, version: {resp.Version}, " +
-            $"body: {body.Substring(0, Math.Min(100, body.Length))}");
-    }
-#endif
     private static bool _keepRunning = true;
 
+#if CENTRALIZED_ARCH_TEST
     static async Task Main(string[] args) {
+#else 
+    static void Main(string[] args) {
+#endif
         int pinOutput = 18,
             pinInput = 17;
 
         string objectId = "",
                connectToPeerID = "";
         string[] bootstrapAddrs = Array.Empty<string>();
-
 
         for (int i = 0; i < args.Length; i++) {
             switch (args[i].ToLower()) {
@@ -54,12 +46,11 @@ public class MainClass {
         objectId = Guid.NewGuid().ToString();
         Console.WriteLine($"Object Id -> {objectId}");
 
-#if !CENTRALIZED_ARCH_TEST
-        P2pManager p2pManager = new P2pManager(objectId, bootstrapAddrs, bootstrapAddrs.Length==0);
-
-
         //GPIO MANAGER
-        GpioManager gpioManager = new GpioManager(pinOutput, pinInput);
+        var gpioManager = new GpioManager(pinOutput, pinInput);
+
+#if !CENTRALIZED_ARCH_TEST
+        var p2pManager = new P2pManager(objectId, bootstrapAddrs, bootstrapAddrs.Length==0);
 
         P2pManager.OnVirtualStateChange += (sender, args) => gpioManager.HandleVirtualStateChange(args);
         gpioManager.OnPhysicalStateChange += (sender, args) => p2pManager.HandlePhysicalStateChange(args);
@@ -75,27 +66,31 @@ public class MainClass {
         gpioManager.OnPhysicalStateChange -= (sender, args) => p2pManager.HandlePhysicalStateChange(args);
 
         p2pManager.StopPeer();
+
+#else
+
         Console.WriteLine("CENTRALIZED");
 
         Console.CancelKeyPress += delegate (object? sender, ConsoleCancelEventArgs e) {
             e.Cancel = true;
             _keepRunning = false;
         };
-#else
-        Console.WriteLine("Starting HTTP listener...");
 
         var httpServer = new HttpServer();
+        var httpClient = new Client();
+
         httpServer.Start();
 
-        await SendRequest();
+        httpServer.OnVirtualStateChange += (sender, args) => gpioManager.HandleVirtualStateChange(args);
+        gpioManager.OnPhysicalStateChange += (sender, args) => httpClient.HandlePhysicalStateChange(args);
 
         while (_keepRunning) { }
 
         httpServer.Stop();
+        httpServer.OnVirtualStateChange -= (sender, args) => gpioManager.HandleVirtualStateChange(args);
+        gpioManager.OnPhysicalStateChange -= (sender, args) => httpClient.HandlePhysicalStateChange(args);
 
         Console.WriteLine("Exiting gracefully...");
 #endif
-
     }
-
 }
