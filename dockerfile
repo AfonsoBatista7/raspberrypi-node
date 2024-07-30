@@ -38,9 +38,9 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0.3-jammy-arm64v8 AS runtime
 
 # Install necessary packages for GPIO access
 RUN apt-get update && \
-    apt-get install -y 
-#   libgpiod2 \
-#   libgpiod-dev
+    apt-get install -y \
+    libgpiod2 \
+    libgpiod-dev
 
 # Set the working directory inside the container
 WORKDIR /Project
