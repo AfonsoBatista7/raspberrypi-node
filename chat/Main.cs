@@ -19,6 +19,7 @@ public class MainClass {
             $"body: {body.Substring(0, Math.Min(100, body.Length))}");
     }
 #endif
+    private static bool _keepRunning = true;
 
     static async Task Main(string[] args) {
         int pinOutput = 18,
@@ -76,10 +77,25 @@ public class MainClass {
         p2pManager.StopPeer();
         Console.WriteLine("CENTRALIZED");
 
+        Console.CancelKeyPress += delegate (object? sender, ConsoleCancelEventArgs e) {
+            e.Cancel = true;
+            _keepRunning = false;
+        };
 #else
+        Console.WriteLine("Starting HTTP listener...");
+
+        var httpServer = new HttpServer();
+        httpServer.Start();
+
         await SendRequest();
-        
+
+        while (_keepRunning) { }
+
+        httpServer.Stop();
+
+        Console.WriteLine("Exiting gracefully...");
 #endif
 
     }
+
 }
