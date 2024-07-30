@@ -27,6 +27,10 @@ public class IotEventData : EventArgs {
     }
 
     public static IotEventData? StringToData(string data) {
+
+
+        Console.WriteLine($"{data}");
+
         // Split the string by ':' and trim any spaces
         string[] parts = data.Split(':');
 

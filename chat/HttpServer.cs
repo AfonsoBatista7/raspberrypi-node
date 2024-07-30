@@ -34,7 +34,10 @@ namespace Centralized {
                 Console.WriteLine($"From: {request.Url}");
 
                 if (request.HasEntityBody) { response.StatusCode = (int)HttpStatusCode.NotAcceptable; }
-                else { 
+                else {
+
+                    Console.WriteLine("AAAAAAAAAAAAAAAA");
+
                     var body = request.InputStream;
                     var encoding = request.ContentEncoding;
                     var reader = new StreamReader(body, encoding);
