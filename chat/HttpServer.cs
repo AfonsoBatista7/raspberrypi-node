@@ -29,7 +29,7 @@ public class HttpServer
             var response = context.Response;
 
             // do something with the request
-            Console.WriteLine($"{request.Url}");
+            Console.WriteLine($"From: {request.Url}");
 
             if (request.HasEntityBody) {
 
@@ -38,13 +38,30 @@ public class HttpServer
                 var reader = new StreamReader(body, encoding);
 
                 string s = reader.ReadToEnd();
-                Console.WriteLine(s);
+
+                // Split the string by ':' and trim any spaces
+                string[] parts = s.Split(':');
+
+                if(parts.Length == 2) {
+
+                    // Extract the id part
+                    string id = parts[0];
+
+                    // Try to convert the second part to an integer
+                    if (int.TryParse(parts[1].Trim(), out int state)) {
+
+                        Console.WriteLine("ID: " + id);
+                        Console.WriteLine("State: " + state);
+
+                        response.StatusCode = (int)HttpStatusCode.OK;
+                        response.ContentType = "text/plain";
+                        response.OutputStream.Write(new byte[] { }, 0, 0);
+
+                    } else Console.WriteLine("Error: Unable to parse the state part to an integer.");
+                }
+
                 reader.Close();
                 body.Close();
-
-                response.StatusCode = (int)HttpStatusCode.OK;
-                response.ContentType = "text/plain";
-                response.OutputStream.Write(new byte[] { }, 0, 0);
 
             } else response.StatusCode = (int)HttpStatusCode.NotAcceptable;
 
@@ -52,7 +69,5 @@ public class HttpServer
 
             Receive();
         }
-
-
     }
 }
