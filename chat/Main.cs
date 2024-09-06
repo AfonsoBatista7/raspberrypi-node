@@ -50,6 +50,9 @@ public class MainClass {
         var gpioManager = new GpioManager(pinOutput, pinInput);
 
 #if !CENTRALIZED_ARCH_TEST
+
+        Console.WriteLine("DECENTRALIZED");
+
         var p2pManager = new P2pManager(objectId, bootstrapAddrs, bootstrapAddrs.Length==0);
 
         P2pManager.OnVirtualStateChange += (sender, args) => gpioManager.HandleVirtualStateChange(args);
