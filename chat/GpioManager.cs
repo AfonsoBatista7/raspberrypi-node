@@ -1,12 +1,11 @@
 using System.Device.Gpio;
-using System.Runtime.Serialization;
 
 namespace IoT {
 
     public class GpioManager : IDisposable {
 
         private GpioController _controller;
-        public event EventHandler<GpioEventArgs> OnPhysicalStateChange = delegate { };
+        public event EventHandler<IotEventData> OnPhysicalStateChange = delegate { };
         
         private bool _isLedOn;
         private readonly int _pinInput;
@@ -21,39 +20,37 @@ namespace IoT {
             _controller.OpenPin(_pinInput, PinMode.Input);
 
             _controller.RegisterCallbackForPinValueChangedEvent(_pinInput, PinEventTypes.Falling,  (sender, args) => PhysicalStateChangeEvent(args));
-
         }
 
         private void TurnOnLight() {
             Console.WriteLine("Turning on the light...");
 
-            _isLedOn = true;
             _controller.Write(_pinOutput, PinValue.High);
         }
 
         private void TurnOffLight() {
             Console.WriteLine("Turning off the light...");
 
-            _isLedOn = false;
             _controller.Write(_pinOutput, PinValue.Low);
         } 
 
-        public bool ToggleLight() {
-            if(_isLedOn) TurnOffLight();
-            else TurnOnLight();
-
-            return _isLedOn;
+        private void TurnOnOff() {
+            if(_isLedOn) TurnOnLight();
+            else TurnOffLight();
         }
 
-        public bool SetState(int state) {
-            bool boolState = StateToBool(state);
+        public void ToggleLight() {
+            _isLedOn = !_isLedOn;
 
+            TurnOnOff();
+        }
+
+        public void SetState(bool boolState) {
             if(boolState!=_isLedOn) {
-                if(boolState) TurnOnLight();
-                else TurnOffLight();
+                _isLedOn = boolState;
+                
+                TurnOnOff();
             }
-
-            return _isLedOn;
         }
 
         public void Dispose() {
@@ -67,11 +64,10 @@ namespace IoT {
             }
         }
 
-        public void HandleVirtualStateChange(P2PEventArgs args) {
-
+        public void HandleVirtualStateChange(IotEventData args) {
             //TODO - handle objectId
             string objectId = args.Id;
-            SetState(args.State);
+            SetState(args.StateToBool());
         }
 
         public void PhysicalStateChangeEvent(PinValueChangedEventArgs args) {
@@ -80,21 +76,7 @@ namespace IoT {
 
             ToggleLight();
 
-            OnPhysicalStateChange?.Invoke(this, new GpioEventArgs(id, _isLedOn ? 1 : 0));
+            OnPhysicalStateChange?.Invoke(this, new IotEventData(id, _isLedOn));
         }
-
-        private bool StateToBool(int state) {
-            return state == 1;
-        }
-    }
-}
-
-public class GpioEventArgs : EventArgs {
-    public int State { get; }
-    public string Id { get; }
-
-    public GpioEventArgs(string id, int state) {
-        State = state;
-        Id = id;
     }
 }

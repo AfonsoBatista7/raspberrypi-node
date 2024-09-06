@@ -8,7 +8,7 @@ namespace P2P {
 
     public class P2pManager {
 
-        public static event EventHandler<P2PEventArgs> OnVirtualStateChange = delegate { };
+        public static event EventHandler<IotEventData> OnVirtualStateChange = delegate { };
 
         public static bool isConnected;
 
@@ -41,7 +41,7 @@ namespace P2P {
 
             public static void VirtualStateChange(string id, int state) {
                 Console.WriteLine($"ID -> {id} and STATE -> {state}");
-                OnVirtualStateChange?.Invoke(null, new P2PEventArgs(id, state));
+                OnVirtualStateChange?.Invoke(null, new IotEventData(id, state));
             }
         #endregion
 
@@ -59,25 +59,15 @@ namespace P2P {
         // Closing PEER
         public void StopPeer() => ClosePeer();
 
-        public void PropagateLightState(string id, int state) {
-            Console.WriteLine($"NEW STATE PROPAGATED: {state}");
+        public void PropagateLightState(IotEventData data) {
+            Console.WriteLine($"NEW STATE PROPAGATED: {data.State}");
 
-            PropagateData($"{id}:{state}");
+            PropagateData(data.DataToString());
         }
 
-        public void HandlePhysicalStateChange(GpioEventArgs args) {
-            PropagateLightState(args.Id, args.State);
+        public void HandlePhysicalStateChange(IotEventData args) {
+            PropagateLightState(args);
         }
-
     }
 }
 
-public class P2PEventArgs : EventArgs {
-    public int State { get; }
-    public string Id { get; }
-
-    public P2PEventArgs(string id, int state) {
-        State = state;
-        Id = id;
-    }
-}

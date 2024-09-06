@@ -29,7 +29,7 @@ COPY --from=builderGo /ProjectGo/go-code/libgo.so ./
 
 RUN dotnet restore && \
     dotnet add package System.Device.Gpio --version 2.2.0-* && \
-    dotnet publish --runtime linux-arm64 --self-contained -o out
+    dotnet publish --runtime linux-arm64 --self-contained -o out -p:DefineConstants=CENTRALIZED_ARCH_TEST
 
 RUN cp libgo.so ./out 
 
