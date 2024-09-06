@@ -93,9 +93,9 @@ func connectBootstrapPeer(ctx context.Context, host host.Host, peerinfo peer.Add
 		err := host.Connect(ctx, peerinfo)
 
 		if err != nil {
-			logCallback(fmt.Sprintf("[ERROR RELAY] - %s", err.Error()), 0)
+			logCallback(fmt.Sprintf("[ERROR RELAY] - %s", err.Error()))
 		} else {
-			logCallback("[CONNECTED TO RELAY]", 0)
+			logCallback("[CONNECTED TO RELAY]")
 		}
 	}()
 }
@@ -105,14 +105,14 @@ func createKadAndConnectToRelays(ctx context.Context, host host.Host, debug bool
 
 	kademliaDht, err = dht.New(ctx, host)
 	if err != nil {
-		logCallback(fmt.Sprintf("Failed to create DHT: %s\n", err), 0)
+		logCallback(fmt.Sprintf("Failed to create DHT: %s\n", err))
 		return
 	}
 
 	// Bootstrap the DHT. In the default configuration, this spawns a Background
 	// thread that will refresh the peer table every five minutes.
 	if err = kademliaDht.Bootstrap(ctx, ); err != nil {
-		logCallback(fmt.Sprintf("Failed to bootstrap the DHT: %s\n", err), 0)
+		logCallback(fmt.Sprintf("Failed to bootstrap the DHT: %s\n", err))
 	}
 
 	var wg sync.WaitGroup
