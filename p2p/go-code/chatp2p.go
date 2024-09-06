@@ -84,6 +84,55 @@ func readData(s network.Stream, rw *bufio.ReadWriter) {
 	}
 }
 
+func connectBootstrapPeer(ctx context.Context, host host.Host, peerinfo peer.AddrInfo, wg *sync.WaitGroup) {
+	wg.Add(1)
+
+	go func () {
+		defer wg.Done()
+
+		err := host.Connect(ctx, peerinfo)
+
+		if err != nil {
+			logCallback(fmt.Sprintf("[ERROR RELAY] - %s", err.Error()), 0)
+		} else {
+			logCallback("[CONNECTED TO RELAY]", 0)
+		}
+	}()
+}
+
+func createKadAndConnectToRelays(ctx context.Context, host host.Host, debug bool, cBootstrapPeers []string) {
+	err := error(nil)
+
+	kademliaDht, err = dht.New(ctx, host)
+	if err != nil {
+		logCallback(fmt.Sprintf("Failed to create DHT: %s\n", err), 0)
+		return
+	}
+
+	// Bootstrap the DHT. In the default configuration, this spawns a Background
+	// thread that will refresh the peer table every five minutes.
+	if err = kademliaDht.Bootstrap(ctx, ); err != nil {
+		logCallback(fmt.Sprintf("Failed to bootstrap the DHT: %s\n", err), 0)
+	}
+
+	var wg sync.WaitGroup
+
+	if(debug) {
+		for _, addr := range dht.DefaultBootstrapPeers {
+			peerinfo, _ := peer.AddrInfoFromP2pAddr(addr)
+			
+			connectBootstrapPeer(ctx, host, *peerinfo, &wg)
+		}
+	} else {
+		for _, addr := range cBootstrapPeers {
+			peerinfo, _ := peer.AddrInfoFromString(addr)
+
+			connectBootstrapPeer(ctx, host, *peerinfo, &wg)
+		}
+	}
+	wg.Wait()
+}
+
 func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debugLog, goConnectNotify connectNotify, goVirtualStateChange virtualStateChange, debug bool, playerId string) {
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -96,55 +145,27 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debu
 
 	var r io.Reader = rand.Reader
 
-	host, err := makeHost(r)
+	hostData, err := makeHost(r)
 	if err != nil {
 		logCallback(fmt.Sprintf("Failed to create host: %s\n", err))
 		return
 	}
 
-	logCallback(fmt.Sprintf("My peer ID -> %s", host.ID()))
+	logCallback(fmt.Sprintf("My peer ID -> %s", hostData.ID()))
 
-	hostData = host
+	hostData.SetStreamHandler("/metaverse/1.0.0", handleStream)
 
-	host.SetStreamHandler("/metaverse/1.0.0", handleStream)
-
-	var bootstrapPeers []peer.AddrInfo
-
-	if(debug) {
-		bootstrapPeers = make([]peer.AddrInfo, len(dht.DefaultBootstrapPeers))
-		for i, addr := range dht.DefaultBootstrapPeers {
-			peerinfo, _ := peer.AddrInfoFromP2pAddr(addr)
-			bootstrapPeers[i] = *peerinfo
-		}
-	} else {
-		bootstrapPeers = make([]peer.AddrInfo, len(cBootstrapPeers))
-		for i, addr := range cBootstrapPeers {
-			peerinfo, _ := peer.AddrInfoFromString(addr)
-			bootstrapPeers[i] = *peerinfo
-		}
-	}
-
-	kademliaDht, err = dht.New(ctx, host, dht.BootstrapPeers(bootstrapPeers...))
-	if err != nil {
-		logCallback(fmt.Sprintf("Failed to create DHT: %s\n", err))
-	}
-
-	// Bootstrap the DHT. In the default configuration, this spawns a Background
-	// thread that will refresh the peer table every five minutes.
-	if err = kademliaDht.Bootstrap(ctx); err != nil {
-		logCallback(fmt.Sprintf("Failed to bootstrap the DHT: %s\n", err))
-	}
-
-	time.Sleep(5 * time.Second)
+	// Create a new KadDHT instance and connect to the bootstrap nodes to populate the routing table
+	createKadAndConnectToRelays(ctx, hostData, debug, cBootstrapPeers)
 
 	// create a new PubSub service using the GossipSub router
-	gossipSub, err := pubsub.NewGossipSub(ctx, host)
+	gossipSub, err := pubsub.NewGossipSub(ctx, hostData)
 	if err != nil {
 		logCallback(fmt.Sprintf("Failed to create GossipSub: %s\n", err))	
 		p.done <- true
 	}
 
-	go p.Discover(ctx, host, kademliaDht, playerId)
+	go p.Discover(ctx, hostData, kademliaDht, playerId)
 
 	// join the pubsub topic
 	room := "iot"
