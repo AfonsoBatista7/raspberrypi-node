@@ -76,7 +76,7 @@ namespace P2P {
 
         public void PropagateLightState(IotEventData data) {
             Console.WriteLine($"NEW STATE PROPAGATED: {data.State}");
-            string time = $"[{_testCounter++}] [{Logger.GetCurrentTimeStamp()}] - GO STARTED";
+            string time = $"[{Logger.GetCurrentTimeStamp()}] - GO STARTED";
             Logger.Instance.Log(time);
             Console.WriteLine(time);
 
