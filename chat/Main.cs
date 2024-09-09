@@ -22,6 +22,9 @@ public class MainClass {
                connectToPeerID = "";
         string[] bootstrapAddrs = Array.Empty<string>();
 
+        string logFilePath = "log-raspberry.json";
+        var logger = new Logger(logFilePath);
+
         for (int i = 0; i < args.Length; i++) {
             switch (args[i].ToLower()) {
 #if !CENTRALIZED_ARCH_TEST

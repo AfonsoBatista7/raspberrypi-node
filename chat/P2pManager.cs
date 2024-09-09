@@ -16,6 +16,8 @@ namespace P2P {
         readonly string[] _bootstrapAddrs;
         readonly bool _isDebugMode;
 
+        private readonly Logger _logger;
+
         private const string LIBNAME = "libgo.so";
 
         #region External Methods
@@ -45,10 +47,12 @@ namespace P2P {
             }
         #endregion
 
-        public P2pManager(string id, string[] bootstrapAddrs, bool debug) {
+        public P2pManager(string id, string[] bootstrapAddrs, bool debug, Logger logger) {
             _bootstrapAddrs = bootstrapAddrs;
             _objectId = id;
             _isDebugMode = debug;
+
+            _logger = logger;
         }
 
         // STARTING PEER
