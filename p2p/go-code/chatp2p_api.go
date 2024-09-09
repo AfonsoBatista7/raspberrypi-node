@@ -1,7 +1,7 @@
 package main
 
-// typedef void (*transfer_data)(const char*);
-// void debugLogMakeCallback(const char* log, transfer_data logFunc);
+// typedef void (*transfer_data)(const char*, int);
+// void debugLogMakeCallback(const char* log, int loglevel, transfer_data logFunc);
 // typedef void (*notify)();
 // void connectNotifyMakeCallback(notify connectNotify);
 // typedef void (*virtual_state)(const char*, int);
@@ -26,8 +26,8 @@ func StartP2P(bootstrapPeers **C.char, bootstrapCount int, debugLog C.transfer_d
 		disconnect: make(chan bool),
 	}
 
-	goDebugLog := func(log string) {
-		C.debugLogMakeCallback(C.CString(log), debugLog)
+	goDebugLog := func(log string, loglevel int) {
+		C.debugLogMakeCallback(C.CString(log), C.int(loglevel), debugLog)
 	}
 
 	goConnectNotify := func() {

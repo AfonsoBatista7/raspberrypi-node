@@ -1,8 +1,8 @@
 package main
 
-// typedef void (*transfer_data)(const char*);
-// extern void debugLogMakeCallback(const char* log, transfer_data logFunc) {
-//     logFunc(log);
+// typedef void (*transfer_data)(const char*, int);
+// extern void debugLogMakeCallback(const char* log, int loglevel, transfer_data logFunc) {
+//     logFunc(log, loglevel);
 // }
 // typedef void (*notify)();
 // extern void connectNotifyMakeCallback(notify notifyFunc) {
@@ -37,7 +37,7 @@ import (
 	"github.com/multiformats/go-multiaddr"
 )
 
-type debugLog func(log string)
+type debugLog func(log string, level int)
 type connectNotify func()
 type virtualStateChange func(id string, state int)
 
@@ -55,7 +55,7 @@ var rendezvousString = "METAVERSE"
 
 // Will only be run on the receiving side.
 func handleStream(s network.Stream) {
-	logCallback("Got a new stream!")
+	logCallback("Got a new stream!", 0)
 	connectNotifyCallback()
 
 	// Create a buffer stream for non-blocking read and write.
@@ -65,7 +65,7 @@ func handleStream(s network.Stream) {
 
 func readData(s network.Stream, rw *bufio.ReadWriter) {
 
-	logCallback("Reading Data...")
+	logCallback("Reading Data...", 0)
 	for {
 		str, _ := rw.ReadString('\n')
 
@@ -78,7 +78,7 @@ func readData(s network.Stream, rw *bufio.ReadWriter) {
 		state, err := strconv.Atoi(strings.TrimSpace(strings.Split(str, ":")[1]))
 
 		if err != nil {
-			logCallback(fmt.Sprintf("State not an integer: %s\n", err))
+			logCallback(fmt.Sprintf("State not an integer: %s\n", err), 0)
 		} else {
 			virtualStateChangeCallback(id, state)
 		}
@@ -94,9 +94,13 @@ func connectBootstrapPeer(ctx context.Context, host host.Host, peerinfo peer.Add
 		err := host.Connect(ctx, peerinfo)
 
 		if err != nil {
-			logCallback(fmt.Sprintf("[ERROR RELAY] - %s", err.Error()))
+			logCallback(fmt.Sprintf("[ERROR RELAY] - %s", err.Error()), 0)
 		} else {
-			logCallback("[CONNECTED TO RELAY]")
+			logCallback("[CONNECTED TO RELAY]", 0)
+
+                        currentTime := time.Now()
+                        logCallback(fmt.Sprintf("[%02d:%02d:%02d.%06d] - CONNECTED TO RELAY",
+                            currentTime.Hour(), currentTime.Minute(), currentTime.Second(), currentTime.Nanosecond()), 2)
 		}
 	}()
 }
@@ -106,14 +110,14 @@ func createKadAndConnectToRelays(ctx context.Context, host host.Host, debug bool
 
 	kademliaDht, err = dht.New(ctx, host)
 	if err != nil {
-		logCallback(fmt.Sprintf("Failed to create DHT: %s\n", err))
+		logCallback(fmt.Sprintf("Failed to create DHT: %s\n", err), 0)
 		return
 	}
 
 	// Bootstrap the DHT. In the default configuration, this spawns a Background
 	// thread that will refresh the peer table every five minutes.
 	if err = kademliaDht.Bootstrap(ctx, ); err != nil {
-		logCallback(fmt.Sprintf("Failed to bootstrap the DHT: %s\n", err))
+		logCallback(fmt.Sprintf("Failed to bootstrap the DHT: %s\n", err), 0)
 	}
 
 	var wg sync.WaitGroup
@@ -148,11 +152,11 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debu
 
 	hostData, err := makeHost(r)
 	if err != nil {
-		logCallback(fmt.Sprintf("Failed to create host: %s\n", err))
+		logCallback(fmt.Sprintf("Failed to create host: %s\n", err), 0)
 		return
 	}
 
-	logCallback(fmt.Sprintf("My peer ID -> %s", hostData.ID()))
+	logCallback(fmt.Sprintf("My peer ID -> %s", hostData.ID()), 0)
 
 	hostData.SetStreamHandler("/metaverse/1.0.0", handleStream)
 
@@ -162,7 +166,7 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debu
 	// create a new PubSub service using the GossipSub router
 	gossipSub, err := pubsub.NewGossipSub(ctx, hostData)
 	if err != nil {
-		logCallback(fmt.Sprintf("Failed to create GossipSub: %s\n", err))	
+		logCallback(fmt.Sprintf("Failed to create GossipSub: %s\n", err), 0)	
 		p.done <- true
 	}
 
@@ -172,13 +176,13 @@ func (p *PeerManager) startProtocolP2P(cBootstrapPeers []string, goDebugLog debu
 	room := "iot"
 	topic, err = gossipSub.Join(room)
 	if err != nil {
-		logCallback(fmt.Sprintf("Failed to join topic: %s\n", err))	
+		logCallback(fmt.Sprintf("Failed to join topic: %s\n", err), 0)	
 		p.done <- true
 	}
 
 	// Wait until the peer is terminated
 	<- p.done
-	logCallback("Closing peer...")
+	logCallback("Closing peer...", 0)
 }
 
 func (p *PeerManager) Discover(ctx context.Context, host host.Host, dht *dht.IpfsDHT, playerId string) {
@@ -205,7 +209,7 @@ func (p *PeerManager) Discover(ctx context.Context, host host.Host, dht *dht.Ipf
 
 					if err != nil { continue }
 
-					logCallback(fmt.Sprintf("Connected to peer %s\n", peer.ID.String()))
+					logCallback(fmt.Sprintf("Connected to peer %s\n", peer.ID.String()), 0)
 				}
 			}
 		}
@@ -215,6 +219,9 @@ func (p *PeerManager) Discover(ctx context.Context, host host.Host, dht *dht.Ipf
 // publish to topic
 func publish(stateData string) {
 	if len(stateData) != 0 {
+                currentTime := time.Now()
+                logCallback(fmt.Sprintf("[%s] [%02d:%02d:%02d.%06d] - END GO",
+                    parts[2], currentTime.Hour(), currentTime.Minute(), currentTime.Second(), currentTime.Nanosecond()), 2)
 
 		// publish message to topic
 		bytes := []byte(stateData)
@@ -226,7 +233,7 @@ func makeHost(randomness io.Reader) (host.Host, error) {
 	// Creates a new RSA key pair for this host.
 	prvKey, _, err := crypto.GenerateKeyPairWithReader(crypto.RSA, 2048, randomness)
 	if err != nil {
-		logCallback(fmt.Sprintf("Failed to generate private key: %s\n", err))
+		logCallback(fmt.Sprintf("Failed to generate private key: %s\n", err), 0)
 		return nil, err
 	}
 

@@ -1,9 +1,11 @@
+using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace P2P {
 
     public delegate void CallbackVirtualStateChange(string id, int state);
-    public delegate void CallbackDelegate(string message);
+    public delegate void CallbackDelegate(string message, int logLevel);
     public delegate void ConnectNotify();
 
     public class P2pManager {
@@ -34,7 +36,20 @@ namespace P2P {
 
         #region Callback Methods
             public static void OnDebugLog(string log) {
-                Console.WriteLine(log);
+
+                if(!Enum.IsDefined(typeof(LogLevel), level)) return;
+
+                LogLevel logLevel = (LogLevel)level;
+
+                switch (logLevel) {
+                    case LogLevel.Tests:
+                        Console.WriteLine(log);
+                        _logger.Log(log);
+                        break;
+                    default:
+                        Console.WriteLine(log);
+                        break;
+                }
             }
 
             public static void PeerConnected() {
@@ -71,6 +86,12 @@ namespace P2P {
 
         public void HandlePhysicalStateChange(IotEventData args) {
             PropagateLightState(args);
+        }
+
+        private enum LogLevel {
+            Info = 0,
+            Debug = 1,
+            Tests = 2
         }
     }
 }
