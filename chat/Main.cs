@@ -96,7 +96,7 @@ public class MainClass {
         httpServer.OnVirtualStateChange -= (sender, args) => gpioManager.HandleVirtualStateChange(args);
         gpioManager.OnPhysicalStateChange -= (sender, args) => httpClient.HandlePhysicalStateChange(args);
 
-        Console.WriteLine("Exiting gracefully...");
 #endif
+        Console.WriteLine("Exiting gracefully...");
     }
 }
