@@ -66,7 +66,7 @@ namespace P2P {
         public void PropagateLightState(IotEventData data) {
             Console.WriteLine($"NEW STATE PROPAGATED: {data.State}");
 
-            PropagateData(data.DataToString());
+            PropagateData(data.DataToString()"+:0");
         }
 
         public void HandlePhysicalStateChange(IotEventData args) {
