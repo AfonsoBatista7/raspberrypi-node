@@ -32,7 +32,7 @@ namespace IoT {
 
             _controller.Write(_pinOutput, PinValue.High);
 
-            string time = $"[{_testCounter++}] [{Logger.GetCurrentTimeStamp()}] - CHANGED PHYSICAL LAMP STATE";
+            string time = $"[{++_testCounter}] [{Logger.GetCurrentTimeStamp()}] - CHANGED PHYSICAL LAMP STATE";
             Logger.Instance.Log(time);
             Console.WriteLine(time);
         }
@@ -42,7 +42,7 @@ namespace IoT {
 
             _controller.Write(_pinOutput, PinValue.Low);
 
-            string time = $"[{_testCounter++}] [{Logger.GetCurrentTimeStamp()}] - CHANGED PHYSICAL LAMP STATE";
+            string time = $"[{++_testCounter}] [{Logger.GetCurrentTimeStamp()}] - CHANGED PHYSICAL LAMP STATE";
             Logger.Instance.Log(time);
             Console.WriteLine(time);
         } 
