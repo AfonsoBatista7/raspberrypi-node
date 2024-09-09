@@ -11,13 +11,9 @@ namespace IoT {
         private readonly int _pinInput;
         private readonly int _pinOutput;
 
-        private readonly Logger _logger;
-
-        public GpioManager(int pinOutput, int pinInput, Logger logger) {
+        public GpioManager(int pinOutput, int pinInput) {
             _pinOutput = pinOutput;
             _pinInput = pinInput;
-
-            _logger = logger;
 
             _controller = new GpioController();
 
@@ -33,7 +29,7 @@ namespace IoT {
             _controller.Write(_pinOutput, PinValue.High);
 
             string time = $"[{Logger.GetCurrentTimeStamp()}] - CHANGED PHYSICAL LAMP STATE";
-            _logger.Log(time);
+            Logger.Instance.Log(time);
             Console.WriteLine(time);
         }
 
@@ -43,7 +39,7 @@ namespace IoT {
             _controller.Write(_pinOutput, PinValue.Low);
 
             string time = $"[{Logger.GetCurrentTimeStamp()}] - CHANGED PHYSICAL LAMP STATE";
-            _logger.Log(time);
+            Logger.Instance.Log(time);
             Console.WriteLine(time);
         } 
 
@@ -85,7 +81,7 @@ namespace IoT {
 
         public void PhysicalStateChangeEvent(PinValueChangedEventArgs args) {
             string time = $"[{Logger.GetCurrentTimeStamp()}] - CLICKED PHYSICAL BUTTON";
-            _logger.Log(time);
+            Logger.Instance.Log(time);
             Console.WriteLine(time);
 
             //TODO - Better handling of the IoT ids

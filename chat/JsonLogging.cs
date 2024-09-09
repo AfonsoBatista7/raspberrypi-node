@@ -3,9 +3,15 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-public class Logger {
+public static class Logger {
     private readonly string _filePath;
     private readonly List<LogEntry> _logEntries;
+
+    public static Logger Instance { get; private set; }
+
+    public static void Initialize(string logFilePath) {
+        Instance = new Logger(logFilePath);
+    }
 
     public Logger(string filePath) {
         _filePath = filePath;

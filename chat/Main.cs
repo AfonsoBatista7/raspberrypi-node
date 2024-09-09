@@ -23,7 +23,7 @@ public class MainClass {
         string[] bootstrapAddrs = Array.Empty<string>();
 
         string logFilePath = "log-raspberry.json";
-        var logger = new Logger(logFilePath);
+        Logger.Initialize(logFilePath);
 
         for (int i = 0; i < args.Length; i++) {
             switch (args[i].ToLower()) {
@@ -50,13 +50,13 @@ public class MainClass {
         Console.WriteLine($"Object Id -> {objectId}");
 
         //GPIO MANAGER
-        var gpioManager = new GpioManager(pinOutput, pinInput, logger);
+        var gpioManager = new GpioManager(pinOutput, pinInput);
 
 #if !CENTRALIZED_ARCH_TEST
 
         Console.WriteLine("DECENTRALIZED");
 
-        var p2pManager = new P2pManager(objectId, bootstrapAddrs, bootstrapAddrs.Length==0, logger);
+        var p2pManager = new P2pManager(objectId, bootstrapAddrs, bootstrapAddrs.Length==0);
 
         P2pManager.OnVirtualStateChange += (sender, args) => gpioManager.HandleVirtualStateChange(args);
         gpioManager.OnPhysicalStateChange += (sender, args) => p2pManager.HandlePhysicalStateChange(args);
