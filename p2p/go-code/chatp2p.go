@@ -219,6 +219,13 @@ func (p *PeerManager) Discover(ctx context.Context, host host.Host, dht *dht.Ipf
 // publish to topic
 func publish(stateData string) {
 	if len(stateData) != 0 {
+                //FOR TESTING
+                parts := strings.Split(stateData, ":")
+                if len(parts) != 3 {
+                    logCallback(fmt.Sprintf("Unexpected number of parts:", len(parts)), 0)
+                    return
+                }
+
                 currentTime := time.Now()
                 logCallback(fmt.Sprintf("[%s] [%02d:%02d:%02d.%06d] - END GO",
                     parts[2], currentTime.Hour(), currentTime.Minute(), currentTime.Second(), currentTime.Nanosecond()), 2)
