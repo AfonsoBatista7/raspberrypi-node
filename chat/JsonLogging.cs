@@ -4,14 +4,16 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 
 public static class Logger {
-    private readonly string _filePath;
-    private readonly List<LogEntry> _logEntries;
-
     public static Logger Instance { get; private set; }
 
     public static void Initialize(string logFilePath) {
-        Instance = new Logger(logFilePath);
+        Instance = new JsonLogger(logFilePath);
     }
+}
+
+public class JsonLogger {
+    private readonly string _filePath;
+    private readonly List<LogEntry> _logEntries;
 
     public Logger(string filePath) {
         _filePath = filePath;
