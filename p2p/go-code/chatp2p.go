@@ -98,7 +98,7 @@ func connectBootstrapPeer(ctx context.Context, host host.Host, peerinfo peer.Add
 		} else {
 			logCallback("[CONNECTED TO RELAY]", 0)
 
-                        currentTime := time.Now()
+                        currentTime := time.Now().UTC()
                         logCallback(fmt.Sprintf("[%02d:%02d:%02d.%06d] - CONNECTED TO RELAY",
                             currentTime.Hour(), currentTime.Minute(), currentTime.Second(), currentTime.Nanosecond()), 2)
 		}
@@ -226,7 +226,7 @@ func publish(stateData string) {
                     return
                 }
 
-                currentTime := time.Now()
+                currentTime := time.Now().UTC()
                 logCallback(fmt.Sprintf("[%s] [%02d:%02d:%02d.%06d] - END GO",
                     parts[2], currentTime.Hour(), currentTime.Minute(), currentTime.Second(), currentTime.Nanosecond()), 2)
 
