@@ -19,7 +19,7 @@ public class JsonLogger {
     private readonly string _filePath;
     private readonly List<LogEntry> _logEntries;
 
-    public Logger(string filePath) {
+    public JsonLogger(string filePath) {
         _filePath = filePath;
         _logEntries = new List<LogEntry>();
 
