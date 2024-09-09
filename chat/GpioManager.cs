@@ -76,7 +76,7 @@ namespace IoT {
         }
 
         public void PhysicalStateChangeEvent(PinValueChangedEventArgs args) {
-            string time = $"[{Logger.GetCurrentTimeStamp()}] - CLICKED PHYSICAL BUTTON" 
+            string time = $"[{Logger.GetCurrentTimeStamp()}] - CLICKED PHYSICAL BUTTON";
             _logger.Log(time);
             Console.WriteLine(time);
 
