@@ -17,6 +17,8 @@ namespace IoT {
             _pinOutput = pinOutput;
             _pinInput = pinInput;
 
+            _testCounter = 0;
+
             _controller = new GpioController();
 
             _controller.OpenPin(_pinOutput, PinMode.Output);
