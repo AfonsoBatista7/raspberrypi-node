@@ -31,12 +31,20 @@ namespace IoT {
             Console.WriteLine("Turning on the light...");
 
             _controller.Write(_pinOutput, PinValue.High);
+
+            string time = $"[{Logger.GetCurrentTimeStamp()}] - CHANGED PHYSICAL LAMP STATE";
+            _logger.Log(time);
+            Console.WriteLine(time);
         }
 
         private void TurnOffLight() {
             Console.WriteLine("Turning off the light...");
 
             _controller.Write(_pinOutput, PinValue.Low);
+
+            string time = $"[{Logger.GetCurrentTimeStamp()}] - CHANGED PHYSICAL LAMP STATE";
+            _logger.Log(time);
+            Console.WriteLine(time);
         } 
 
         private void TurnOnOff() {
