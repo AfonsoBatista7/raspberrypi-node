@@ -33,7 +33,7 @@ namespace P2P {
         #endregion
 
         #region Callback Methods
-            public static void OnDebugLog(string log) {
+            public static void OnDebugLog(string log, int level) {
 
                 if(!Enum.IsDefined(typeof(LogLevel), level)) return;
 
