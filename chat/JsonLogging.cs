@@ -4,10 +4,14 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 
 public static class Logger {
-    public static Logger Instance { get; private set; }
+    public static JsonLogger Instance { get; private set; }
 
     public static void Initialize(string logFilePath) {
         Instance = new JsonLogger(logFilePath);
+    }
+
+    public static string GetCurrentTimeStamp() {
+        return $"{DateTime.UtcNow:HH:mm:ss.fffffff}";
     }
 }
 
@@ -46,8 +50,5 @@ public class JsonLogger {
         public string Message { get; set; }
     }
 
-    public static string GetCurrentTimeStamp() {
-        return $"{DateTime.UtcNow:HH:mm:ss.fffffff}";
-    }
 }
 
