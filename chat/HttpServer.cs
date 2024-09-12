@@ -15,6 +15,13 @@ namespace Centralized {
             _listener = new HttpListener();
             _listener.Prefixes.Add("http://*:" + Port.ToString() + "/");
             _listener.Start();
+
+            // Print the addresses the server is listening on
+            Console.WriteLine("Server listening on addresses:");
+            foreach (var prefix in _listener.Prefixes) {
+                Console.WriteLine(prefix);
+            }
+
             Receive();
         }
 

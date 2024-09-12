@@ -44,7 +44,6 @@ public class MainClass {
             }
         }
 
-        if (bootstrapAddrs.Length == 0) Console.WriteLine("[DEBUG MODE]");
 
         objectId = Guid.NewGuid().ToString();
         Console.WriteLine($"Object Id -> {objectId}");
@@ -53,6 +52,7 @@ public class MainClass {
         var gpioManager = new GpioManager(pinOutput, pinInput);
 
 #if !CENTRALIZED_ARCH_TEST
+        if (bootstrapAddrs.Length == 0) Console.WriteLine("[DEBUG MODE]");
 
         Console.WriteLine("DECENTRALIZED");
 
