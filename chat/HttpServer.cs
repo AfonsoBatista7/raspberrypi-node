@@ -8,7 +8,10 @@ namespace Centralized {
 
         private HttpListener? _listener;
 
+        private int _testCounter;
+
         public void Start() {
+            _testCounter = 0;
             _listener = new HttpListener();
             _listener.Prefixes.Add("http://*:" + Port.ToString() + "/");
             _listener.Start();
@@ -26,6 +29,10 @@ namespace Centralized {
         private void ListenerCallback(IAsyncResult result) {
 
             if (_listener!=null && _listener.IsListening) {
+                string time = $"[{++_testCounter}] [{Logger.GetCurrentTimeStamp()}] - RECEIVED STATE";
+                Logger.Instance.Log(time);
+                Console.WriteLine(time);
+
                 var context = _listener.EndGetContext(result);
                 var request = context.Request;
                 var response = context.Response;
